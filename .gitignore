@@ -1,0 +1,69 @@
+# ======================
+# Fichiers généraux
+# ======================
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+*.tmp
+*.bak
+*~
+
+# Fichiers de configuration locaux
+.env
+*.env
+.env.*
+*.local
+
+# ======================
+# Java / Spring Boot / Gradle (Backend)
+# ======================
+/target/
+/build/
+/out/
+/*.war
+/*.jar
+/*.ear
+/*.class
+/*.dump
+*.iml
+/maven-status/
+/!**/src/main/**
+/!**/src/test/**
+/dependency-reduced-pom.xml
+/.mvn/
+/mvnw
+/mvnw.cmd
+hs_err_pid*
+replay_pid*
+
+# Gradle
+.gradle/
+build/
+gradle/
+gradlew
+
+# Fichiers de configuration locaux
+application-local.properties
+application-local.yml
+
+# ======================
+# Angular (Frontdnd)
+# ======================
+# Fichiers générés
+dist/
+tmp/
+**/*.js.map
+.sass-cache/
+coverage/
+libpeerconnection.log
+npm-debug.log
+testem.log
+typings/
+.angular/
+
+# Dossiers de dépendances
+node_modules/
+bower_components/
