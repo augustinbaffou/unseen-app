@@ -38,7 +38,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -52,9 +52,9 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService)
-                                .oidcUserService(this.oidcUserService()))
-
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService)
+                                .oidcUserService(oauth2UserService::loadOidcUser))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -63,20 +63,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public OidcUserService oidcUserService() {
-        return new OidcUserService() {
-            @Override
-            public OidcUser loadUser(OidcUserRequest userRequest) {
-                OidcUser oidcUser = super.loadUser(userRequest);
-                return (OidcUser) oauth2UserService.processOAuth2User(oidcUser);
-            }
-        };
-    }
-
-    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://moncocktail.onrender.com/"));
+        configuration.setAllowedOrigins(List.of(""));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         configuration.setAllowCredentials(true);
