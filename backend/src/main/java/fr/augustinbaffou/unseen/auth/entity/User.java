@@ -24,6 +24,8 @@ public class User implements UserDetails {
     @Column(name = "google_id")
     private String googleId;
 
+    private String picture;
+
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
@@ -34,6 +36,12 @@ public class User implements UserDetails {
         this.email = email;
         this.name = name;
         this.googleId = googleId;
+    }
+    public User(String email, String name, String googleId, String picture) {
+        this.email = email;
+        this.name = name;
+        this.googleId = googleId;
+        this.picture = picture;
     }
 
     // Getters et Setters
@@ -48,6 +56,13 @@ public class User implements UserDetails {
 
     public String getGoogleId() { return googleId; }
     public void setGoogleId(String googleId) { this.googleId = googleId; }
+
+    public String getPicture() {
+        return picture;
+    }
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }

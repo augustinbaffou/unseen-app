@@ -38,12 +38,30 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
         String googleId = oauth2User.getAttribute("sub");
+        String picture = oauth2User.getAttribute("picture"); // Photo de profil Google
 
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    User newUser = new User(email, name, googleId);
+                    User newUser = new User(email, name, googleId, picture);
                     return userRepository.save(newUser);
                 });
+
+        // Mettre à jour les informations si elles ont changé
+        boolean updated = false;
+
+        if (!name.equals(user.getName())) {
+            user.setName(name);
+            updated = true;
+        }
+
+        if (picture != null && !picture.equals(user.getPicture())) {
+            user.setPicture(picture);
+            updated = true;
+        }
+
+        if (updated) {
+            userRepository.save(user);
+        }
 
         if (oauth2User instanceof OidcUser oidcUser) {
             return new CustomOidcUser(oidcUser, user);
