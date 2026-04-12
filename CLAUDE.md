@@ -18,23 +18,29 @@ unseen-app/
 
 ### Frontend (`frontend/`)
 ```bash
-npm start         # Dev server at http://localhost:4200/
-npm run build     # Production build
-npm run watch     # Dev build in watch mode
-npm test          # Unit tests via Vitest
+npm start                        # Dev server at http://localhost:4200/
+npm run build                    # Production build
+npm run watch                    # Dev build in watch mode
+npm test                         # Unit tests via Vitest
+npm test -- --reporter=verbose   # Single file: npm test -- src/app/foo.spec.ts
 ```
 
 ### Backend (`backend/`)
 ```bash
-./gradlew bootRun   # Start API server (port 8080)
-./gradlew build     # Compile and package
-./gradlew test      # Run tests
+./gradlew bootRun --args='--spring.profiles.active=local'   # Start API server (port 8080) with local profile
+./gradlew build                                              # Compile and package
+./gradlew test                                               # Run all tests
+./gradlew test --tests "fr.augustinbaffou.unseen.SomeTest"  # Run a single test class
 ```
 
 ### Prerequisites
 - PostgreSQL running on `localhost:5432` with database `unseen-db`
-- Backend uses `application-local.properties` profile for local dev
-- Frontend proxies API calls to `http://localhost:8080`
+- Backend requires these environment variables (used in `application-local.properties`):
+  - `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD`
+  - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+  - `JWT_SECRET_KEY` (Base64-encoded HS256 key)
+  - `APP_CORS_ALLOWED_ORIGIN` (e.g. `http://localhost:4200`)
+- Frontend proxies API calls to `http://localhost:8080` (set in `environment.ts`)
 
 ## Architecture
 
@@ -45,24 +51,24 @@ npm test          # Unit tests via Vitest
 All components use the **standalone** pattern — no NgModule. Reactive state is handled with Angular **Signals** (`signal()`, `computed()`, `toSignal()`); async sources use **RxJS Observables** converted to signals at the component boundary.
 
 **Routing** (`app.routes.ts`):
-- `/` → `MapComponent` (main page)
+- `/` → `MapComponent` (main page, protected by `AuthGuard` → redirects to `/login` if unauthenticated)
 - `/login` → `LoginComponent` (lazy loaded)
 - `/oauth/callback` → `OAuthCallbackComponent` (JWT extraction from URL)
 - `**` → redirect to `/`
 
-**HTTP:** A `JwtInterceptor` automatically attaches `Authorization: Bearer <token>` to every outgoing request.
+**HTTP:** `JwtInterceptor` attaches `Authorization: Bearer <token>` to every outgoing request. Token is stored in `localStorage` under key `jwt_token`.
 
 **Services:**
 - `OverpassService` — queries the OpenStreetMap Overpass API for bars/cafes/pubs within 7.5 km of Nantes center
-- `BarMarkerConverterService` — maps raw Overpass responses to `BarMarker` objects with tier ranks (S/A/B/C/D/NA)
-- `AuthService` — manages JWT in `localStorage`, drives Google OAuth2 redirect flow
+- `BarMarkerConverterService` (`bar-converter.service.ts`) — maps raw Overpass responses to `BarMarker` objects; **ranks are currently randomised** (75 % chance of `NA`, otherwise random S/A/B/C/D — placeholder pending real ranking logic)
+- `AuthService` — manages JWT in `localStorage`, decodes payload client-side (no signature check), drives Google OAuth2 redirect flow
 
 **Data model** (`commun/bar.model.ts`):
 ```typescript
 type BarMarker = { name: string; lat: number; lng: number; rank: string; description?: string; }
 ```
 
-**Map center** is hardcoded in `commun/config.ts`: `{ lat: 47.218371, lng: -1.553621 }`, radius 7500 m.
+**Map:** `LeafletMapComponent` uses CartoDB Voyager tile layer. Map center and radius are defined in `commun/config.ts` (`lat: 47.218371, lng: -1.553621`, radius 7500 m). Per-rank marker icons are loaded from `markers/light-svg/marker-pin-<rank>.svg`.
 
 **Styling:** Custom Tailwind theme in `src/styles.scss` defines the Unseen palette (cream, terracotta, sage, charcoal…) and per-tier colors (S→purple, A→gold, B→green, C→blue, D→orange, E→red). Fonts: Playfair Display (display), Inter (body), DM Sans (accent).
 
@@ -83,10 +89,10 @@ All auth logic lives under `fr.augustinbaffou.unseen.auth/`:
 **Key classes:**
 - `SecurityConfiguration` — stateless sessions, CORS, JWT filter chain, role-based rules (`/admin/**` requires ADMIN)
 - `JwtAuthenticationFilter` — validates JWT on every request
-- `JwtService` — HS256 signing, 24 h expiry, embeds `id/name/email/role/picture` claims
+- `JwtService` — HS256 signing, expiry configured via `security.jwt.expiration-time` (ms; default 3600000 in local profile), embeds `id/name/email/role/picture` claims
 - `User` entity — implements `UserDetails`; roles: `USER`, `ADMIN`
 
-**Public endpoints:** `/auth/**`, `/public/**`, `/oauth2/**`
+**Public endpoints:** `/auth/**`, `/public/**`, `/oauth2/**`, `/login/oauth2/**`
 **Protected:** everything else; `/admin/**` requires ADMIN role
 
 **Database:** Hibernate `ddl-auto=update` — schema evolves automatically; no migration tool in use.

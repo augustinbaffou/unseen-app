@@ -2,13 +2,126 @@
 @use 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
 
+/* ─── Thème Tailwind v4 (CSS @theme) ──────────────────────────────────── */
+@theme {
+  /* Palette sémantique Unseen */
+  --color-cream:      #F5EBE0;
+  --color-unseen-white:  #FFFFFF;
+  --color-bg-overlay: #E8DCCF;
+  --color-beige:      #E8DCCF;
+  --color-charcoal:   #2B2D2E;
+  --color-smoke:      #4A4A4A;
+  --color-terracotta: #D4A373;
+  --color-sage:       #6A7D5A;
+  --color-sage-light: #92A686;
+
+  /* Tiers */
+  --color-tier-s:  #C9A961;
+  --color-tier-a:  #7B9171;
+  --color-tier-b:  #6B8E9D;
+  --color-tier-c:  #C89F5D;
+  --color-tier-d:  #A67C52;
+  --color-tier-e:  #964327;
+  --color-tier-na: #8C8C8C;
+
+  /* Typographies */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body:    Inter, system-ui, sans-serif;
+  --font-accent:  "DM Sans", system-ui, sans-serif;
+
+  /* Ombres */
+  --shadow-subtle:    0 2px 8px  rgba(43, 45, 46, 0.06);
+  --shadow-standard:  0 4px 16px rgba(43, 45, 46, 0.12);
+  --shadow-pronounced:0 8px 32px rgba(43, 45, 46, 0.18);
+  --shadow-floating:  0 16px 48px rgba(43, 45, 46, 0.24);
+
+  /* Rayons */
+  --radius-card: 12px;
+  --radius-pill: 24px;
+  --radius-btn:  8px;
+}
+
+/* ─── Variables CSS sémantiques (light mode par défaut) ─────────────────────── */
 :root {
-  /* Palette de tiers S→E + NA (Gris Pierre — fallback bars sans classement) */
-  --tier-s: #C9A961;
-  --tier-a: #7B9171;
-  --tier-b: #6B8E9D;
-  --tier-c: #C89F5D;
-  --tier-d: #A67C52;
-  --tier-e: #964327;
-  --tier-na: #8C8C8C; /* Gris Pierre — même valeur que E, bars non classés */
+  --cream:      #F5EBE0;
+  --white:      #FFFFFF;
+  --bg-overlay: #E8DCCF;
+  --beige:      #E8DCCF;
+  --charcoal:   #2B2D2E;
+  --smoke:      #4A4A4A;
+  --text-muted: #8C8C8C;
+  --terracotta: #D4A373;
+  --sage:       #6A7D5A;
+  --sage-light: #92A686;
+
+  /* Tiers */
+  --tier-s:  #C9A961;
+  --tier-a:  #7B9171;
+  --tier-b:  #6B8E9D;
+  --tier-c:  #C89F5D;
+  --tier-d:  #A67C52;
+  --tier-e:  #964327;
+  --tier-na: #8C8C8C;
+
+  /* Ombres */
+  --shadow-subtle:     0 2px 8px  rgba(43, 45, 46, 0.06);
+  --shadow-standard:   0 4px 16px rgba(43, 45, 46, 0.12);
+  --shadow-pronounced: 0 8px 32px rgba(43, 45, 46, 0.18);
+  --shadow-floating:   0 16px 48px rgba(43, 45, 46, 0.24);
+}
+
+/* ───  Dark mode (classe .dark sur <html>, toggle utilisateur) ──────────── */
+.dark {
+  --cream:      #1A1614;
+  --white:      #231F1B;
+  --bg-overlay: #2D2824;
+  --beige:      #3E3630;
+  --charcoal:   #F0E6D8;
+  --smoke:      #B5A492;
+  --text-muted: #7A6E64;
+  --terracotta: #D4A373; /* Inchangée — fonctionne sur fond sombre */
+  --sage:       #8A9E79;
+  --sage-light: #A3B594;
+
+  /* Ombres renforcées */
+  --shadow-subtle:     0 2px 8px  rgba(0, 0, 0, 0.25);
+  --shadow-standard:   0 4px 16px rgba(0, 0, 0, 0.40);
+  --shadow-pronounced: 0 8px 32px rgba(0, 0, 0, 0.50);
+  --shadow-floating:   0 16px 48px rgba(0, 0, 0, 0.60);
+}
+
+/* ─── Styles globaux ───────────────────────────────────────────────────── */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background-color: var(--cream);
+  color: var(--charcoal);
+  transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+}
+
+/* Noise texture papier (3–5 % opacité) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Focus outline terracotta (accessibilité) */
+:focus-visible {
+  outline: 3px solid var(--terracotta);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Transitions globales sur les éléments interactifs */
+button, a, [role="button"] {
+  transition: all 200ms ease-in-out;
+}
+
+button:active {
+  transform: scale(0.98);
 }

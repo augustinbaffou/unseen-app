@@ -2,6 +2,7 @@ import {Component, input, output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Observable} from 'rxjs';
 import {AuthService} from '../../auth/auth.service';
+import {ThemeService} from '../../services/theme.service';
 
 interface User {
   id: string;
@@ -28,11 +29,12 @@ export class NavbarComponent {
 
   currentUser$: Observable<User | null>;
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    protected themeService: ThemeService
+  ) {
     this.currentUser$ = this.authService.currentUser$;
   }
-
-  ngOnInit(): void {}
 
   loginWithGoogle(): void {
     this.authService.loginWithGoogle();
