@@ -16,12 +16,17 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
+
+    @Value("${app.cors.allowed-origin}")
+    private String allowedOrigin;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2UserService oauth2UserService;
@@ -65,7 +70,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(""));
+        configuration.setAllowedOrigins(List.of(allowedOrigin));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         configuration.setAllowCredentials(true);
