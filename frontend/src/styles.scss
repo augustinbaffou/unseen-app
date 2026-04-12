@@ -1,3 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
 @use 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
+
+:root {
+  /* Palette de tiers S→E + NA (Gris Pierre — fallback bars sans classement) */
+  --tier-s: #C9A961;
+  --tier-a: #7B9171;
+  --tier-b: #6B8E9D;
+  --tier-c: #C89F5D;
+  --tier-d: #A67C52;
+  --tier-e: #964327;
+  --tier-na: #8C8C8C; /* Gris Pierre — même valeur que E, bars non classés */
+}

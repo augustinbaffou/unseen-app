@@ -64,8 +64,9 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private addTileLayer(): void {
-    Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
+    Leaflet.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd'
     }).addTo(this.map);
   }
 
@@ -110,9 +111,9 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
 
   private createIcon(rank: string): Leaflet.Icon {
     return Leaflet.icon({
-      iconUrl: `markers/custom/${rank}.png`,
-      iconSize: [64, 64],
-      iconAnchor: [32, 64]
+      iconUrl: `markers/light-svg/marker-pin-${rank}.svg`,
+      iconSize: [40, 56],
+      iconAnchor: [0, 56]
     });
   }
 }

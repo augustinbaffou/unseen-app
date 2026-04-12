@@ -67,3 +67,6 @@ typings/
 # Dossiers de dépendances
 node_modules/
 bower_components/
+
+.claude
+/design
