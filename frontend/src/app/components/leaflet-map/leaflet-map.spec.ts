@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LeafletMapComponent } from './leaflet-map';
 
-import { LeafletMap } from './leaflet-map';
-
-describe('LeafletMap', () => {
-  let component: LeafletMap;
-  let fixture: ComponentFixture<LeafletMap>;
+describe('LeafletMapComponent', () => {
+  let component: LeafletMapComponent;
+  let fixture: ComponentFixture<LeafletMapComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LeafletMap]
+      imports: [LeafletMapComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LeafletMap);
+    fixture = TestBed.createComponent(LeafletMapComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

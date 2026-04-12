@@ -18,7 +18,6 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   private markersLayer = new Leaflet.LayerGroup();
   private iconCache = new Map<string, Leaflet.Icon>();
 
-  private readonly NANTES_CENTER: [number, number] = [47.218371, -1.553621];
   private readonly DEFAULT_ZOOM = 14;
   private readonly POPUP_CONFIG = {
     maxWidth: 250,
@@ -52,7 +51,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeMap(): void {
-    this.map = Leaflet.map('map').setView(this.NANTES_CENTER, this.DEFAULT_ZOOM);
+    this.map = Leaflet.map('map').setView([NANTES_CENTER_COORDS.lat, NANTES_CENTER_COORDS.lng], this.DEFAULT_ZOOM);
     this.addTileLayer();
     this.addSearchAreaCircle();
     this.markersLayer.addTo(this.map);

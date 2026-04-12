@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 public class UserController {
 
-    @GetMapping("/auth/user")
+    @GetMapping("/user/me")
     public Map<String, Object> user(@AuthenticationPrincipal User user) {
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("id", user.getId());

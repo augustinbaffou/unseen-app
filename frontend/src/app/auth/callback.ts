@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 import { AuthService } from './auth.service';
 
 @Component({
@@ -22,7 +23,7 @@ export class OAuthCallbackComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.authService.handleOAuthCallback().subscribe({
+    this.authService.handleOAuthCallback().pipe(take(1)).subscribe({
       next: (user) => {
         if (user) {
           // Redirige vers la page d'accueil après connexion réussie
