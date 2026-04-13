@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Établissement (bar, café, pub) importé depuis OpenStreetMap")
@@ -49,13 +51,9 @@ public class Bar {
 
     // ── Horaires ─────────────────────────────────────────────────────────────
 
-    @Schema(description = "Horaires d'ouverture au format OSM", example = "Mo-Fr 08:00-20:00; Sa-Su 10:00-22:00")
-    @Column(name = "opening_hours")
-    private String openingHours;
-
-    @Schema(description = "Horaires de la cuisine au format OSM", example = "Mo-Fr 12:00-14:00")
-    @Column(name = "opening_hours_kitchen")
-    private String openingHoursKitchen;
+    @Schema(description = "Créneaux d'ouverture du bar et de la cuisine")
+    @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OpeningHours> openingHours = new ArrayList<>();
 
     // ── Terrasse / intérieur ──────────────────────────────────────────────────
     // Valeur brute OSM conservée (yes / no / terrace / pedestrian_zone / …)
@@ -133,11 +131,8 @@ public class Bar {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getOpeningHours() { return openingHours; }
-    public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
-
-    public String getOpeningHoursKitchen() { return openingHoursKitchen; }
-    public void setOpeningHoursKitchen(String openingHoursKitchen) { this.openingHoursKitchen = openingHoursKitchen; }
+    public List<OpeningHours> getOpeningHours() { return openingHours; }
+    public void setOpeningHours(List<OpeningHours> openingHours) { this.openingHours = openingHours; }
 
     public String getOutdoorSeating() { return outdoorSeating; }
     public void setOutdoorSeating(String outdoorSeating) { this.outdoorSeating = outdoorSeating; }
