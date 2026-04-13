@@ -3,6 +3,17 @@ import {AfterViewInit, Component, effect, input, OnDestroy} from '@angular/core'
 import * as Leaflet from 'leaflet';
 import {BarMarker} from '../../commun/bar.model';
 import {NANTES_SEARCH_RADIUS, NANTES_CENTER_COORDS} from '../../commun/config';
+import {ThemeService} from '../../services/theme.service';
+
+const TILE_URLS = {
+  light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  dark:  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+} as const;
+
+const TILE_OPTIONS: Leaflet.TileLayerOptions = {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd'
+};
 
 @Component({
   selector: 'app-leaflet-map',
@@ -15,6 +26,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   showMarkers = input(true);
 
   private map!: Leaflet.Map;
+  private tileLayer!: Leaflet.TileLayer;
   private markersLayer = new Leaflet.LayerGroup();
   private iconCache = new Map<string, Leaflet.Icon>();
 
@@ -24,8 +36,9 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
     className: 'custom-leaflet-popup'
   };
 
-  constructor() {
+  constructor(private themeService: ThemeService) {
     effect(() => this.handleMarkersChange());
+    effect(() => this.handleThemeChange());
   }
 
   ngAfterViewInit(): void {
@@ -62,11 +75,16 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
     markers.forEach(marker => this.addBarMarker(marker));
   }
 
+  private handleThemeChange(): void {
+    const dark = this.themeService.isDark();
+    if (!this.map) return;
+    this.tileLayer?.remove();
+    this.tileLayer = Leaflet.tileLayer(dark ? TILE_URLS.dark : TILE_URLS.light, TILE_OPTIONS).addTo(this.map);
+  }
+
   private addTileLayer(): void {
-    Leaflet.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd'
-    }).addTo(this.map);
+    const dark = this.themeService.isDark();
+    this.tileLayer = Leaflet.tileLayer(dark ? TILE_URLS.dark : TILE_URLS.light, TILE_OPTIONS).addTo(this.map);
   }
 
   private addSearchAreaCircle(): void {
