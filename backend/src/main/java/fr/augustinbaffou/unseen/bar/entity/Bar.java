@@ -51,9 +51,9 @@ public class Bar {
 
     // ── Horaires ─────────────────────────────────────────────────────────────
 
-    @Schema(description = "Créneaux d'ouverture du bar et de la cuisine")
+    @Schema(description = "Créneaux horaires du bar (ouverture, cuisine, happy hours)")
     @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OpeningHours> openingHours = new ArrayList<>();
+    private List<BarSchedule> schedules = new ArrayList<>();
 
     // ── Terrasse / intérieur ──────────────────────────────────────────────────
     // Valeur brute OSM conservée (yes / no / terrace / pedestrian_zone / …)
@@ -131,8 +131,8 @@ public class Bar {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public List<OpeningHours> getOpeningHours() { return openingHours; }
-    public void setOpeningHours(List<OpeningHours> openingHours) { this.openingHours = openingHours; }
+    public List<BarSchedule> getSchedules() { return schedules; }
+    public void setSchedules(List<BarSchedule> schedules) { this.schedules = schedules; }
 
     public String getOutdoorSeating() { return outdoorSeating; }
     public void setOutdoorSeating(String outdoorSeating) { this.outdoorSeating = outdoorSeating; }

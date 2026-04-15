@@ -1,7 +1,7 @@
 package fr.augustinbaffou.unseen.bar.service.osm;
 
-import fr.augustinbaffou.unseen.bar.entity.OpeningHours;
-import fr.augustinbaffou.unseen.bar.entity.OpeningHoursType;
+import fr.augustinbaffou.unseen.bar.entity.BarSchedule;
+import fr.augustinbaffou.unseen.bar.entity.BarScheduleType;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -24,9 +24,9 @@ import java.util.Map;
  *
  * Les chaînes non reconnues sont silencieusement ignorées.
  */
-public final class OsmOpeningHoursParser {
+public final class OsmBarScheduleParser {
 
-    private OsmOpeningHoursParser() {}
+    private OsmBarScheduleParser() {}
 
     private static final List<String> DAY_ORDER = List.of("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su");
 
@@ -40,7 +40,7 @@ public final class OsmOpeningHoursParser {
             "Su", DayOfWeek.SUNDAY
     );
 
-    public static List<OpeningHours> parse(String raw, OpeningHoursType type) {
+    public static List<BarSchedule> parse(String raw, BarScheduleType type) {
         if (raw == null || raw.isBlank()) return List.of();
 
         String trimmed = raw.trim();
@@ -51,14 +51,14 @@ public final class OsmOpeningHoursParser {
                     .toList();
         }
 
-        List<OpeningHours> result = new ArrayList<>();
+        List<BarSchedule> result = new ArrayList<>();
         for (String rule : trimmed.split(";")) {
             result.addAll(parseRule(rule.trim(), type));
         }
         return result;
     }
 
-    private static List<OpeningHours> parseRule(String rule, OpeningHoursType type) {
+    private static List<BarSchedule> parseRule(String rule, BarScheduleType type) {
         if (rule.endsWith("off")) return List.of();
 
         int spaceIdx = rule.indexOf(' ');
@@ -70,7 +70,7 @@ public final class OsmOpeningHoursParser {
         List<DayOfWeek> days      = expandDays(dayPart);
         List<LocalTime[]> slots   = parseTimeSlots(timePart);
 
-        List<OpeningHours> result = new ArrayList<>();
+        List<BarSchedule> result = new ArrayList<>();
         for (DayOfWeek day : days) {
             for (LocalTime[] slot : slots) {
                 result.add(buildSlot(type, day, slot[0], slot[1]));
@@ -118,8 +118,8 @@ public final class OsmOpeningHoursParser {
         return result;
     }
 
-    private static OpeningHours buildSlot(OpeningHoursType type, DayOfWeek day, LocalTime open, LocalTime close) {
-        OpeningHours slot = new OpeningHours();
+    private static BarSchedule buildSlot(BarScheduleType type, DayOfWeek day, LocalTime open, LocalTime close) {
+        BarSchedule slot = new BarSchedule();
         slot.setType(type);
         slot.setDayOfWeek(day);
         slot.setOpensAt(open);

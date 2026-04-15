@@ -1,5 +1,7 @@
 package fr.augustinbaffou.unseen.commun.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestClient;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -13,6 +15,16 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     private static final String BEARER_SCHEME = "bearerAuth";
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
+    public RestClient.Builder restClientBuilder() {
+        return RestClient.builder();
+    }
 
     @Bean
     public OpenAPI unseenOpenAPI() {

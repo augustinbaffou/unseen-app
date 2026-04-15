@@ -1,8 +1,8 @@
 package fr.augustinbaffou.unseen.bar.service.osm;
 
 import fr.augustinbaffou.unseen.bar.entity.Bar;
-import fr.augustinbaffou.unseen.bar.entity.OpeningHours;
-import fr.augustinbaffou.unseen.bar.entity.OpeningHoursType;
+import fr.augustinbaffou.unseen.bar.entity.BarSchedule;
+import fr.augustinbaffou.unseen.bar.entity.BarScheduleType;
 import fr.augustinbaffou.unseen.bar.service.osm.dto.OverpassElement;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
@@ -60,11 +60,11 @@ public class OsmBarMapper {
         bar.setRawTags(Map.copyOf(tags));
 
         // Horaires
-        List<OpeningHours> slots = new ArrayList<>();
-        slots.addAll(OsmOpeningHoursParser.parse(tags.get("opening_hours"), OpeningHoursType.BAR));
-        slots.addAll(OsmOpeningHoursParser.parse(tags.get("opening_hours:kitchen"), OpeningHoursType.KITCHEN));
+        List<BarSchedule> slots = new ArrayList<>();
+        slots.addAll(OsmBarScheduleParser.parse(tags.get("opening_hours"), BarScheduleType.BAR));
+        slots.addAll(OsmBarScheduleParser.parse(tags.get("opening_hours:kitchen"), BarScheduleType.KITCHEN));
         slots.forEach(slot -> slot.setBar(bar));
-        bar.setOpeningHours(slots);
+        bar.setSchedules(slots);
 
         return bar;
     }
