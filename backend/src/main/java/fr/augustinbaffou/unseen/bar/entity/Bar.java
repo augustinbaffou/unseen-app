@@ -61,6 +61,10 @@ public class Bar {
     @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BarSchedule> schedules = new ArrayList<>();
 
+    @Schema(description = "Jeux disponibles dans l'établissement")
+    @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BarGame> games = new ArrayList<>();
+
     // ── Terrasse / intérieur ──────────────────────────────────────────────────
     // Valeur brute OSM conservée (yes / no / terrace / pedestrian_zone / …)
 
@@ -142,6 +146,9 @@ public class Bar {
 
     public List<BarSchedule> getSchedules() { return schedules; }
     public void setSchedules(List<BarSchedule> schedules) { this.schedules = schedules; }
+
+    public List<BarGame> getGames() { return games; }
+    public void setGames(List<BarGame> games) { this.games = games; }
 
     public String getOutdoorSeating() { return outdoorSeating; }
     public void setOutdoorSeating(String outdoorSeating) { this.outdoorSeating = outdoorSeating; }
