@@ -6,7 +6,8 @@ public final class BarExceptionConstants {
 
     // ── Nom de la ressource ───────────────────────────────────────────────────
 
-    public static final String RESOURCE_NAME = "Bar";
+    public static final String RESOURCE_NAME     = "Bar";
+    public static final String OSM_RESOURCE_NAME = "OsmBar";
 
     // ── Noms des champs (utilisés dans ResourceNotFoundException) ─────────────
 

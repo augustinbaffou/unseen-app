@@ -1,6 +1,7 @@
 package fr.augustinbaffou.unseen.commun.exception.handler;
 
 import fr.augustinbaffou.unseen.commun.exception.ExceptionMessages;
+import fr.augustinbaffou.unseen.commun.exception.ResourceAlreadyExistsException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import fr.augustinbaffou.unseen.commun.exception.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,17 @@ public class GlobalExceptionHandler {
         return ErrorResponse.of(
                 HttpStatus.NOT_FOUND.value(),
                 ExceptionMessages.HTTP_NOT_FOUND,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflict(ResourceAlreadyExistsException ex, HttpServletRequest request) {
+        return ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                ExceptionMessages.HTTP_CONFLICT,
                 ex.getMessage(),
                 request.getRequestURI()
         );
