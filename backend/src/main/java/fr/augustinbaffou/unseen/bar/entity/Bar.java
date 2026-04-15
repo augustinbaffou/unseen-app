@@ -49,6 +49,12 @@ public class Bar {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // ── Tarification ─────────────────────────────────────────────────────────
+
+    @Schema(description = "Tranche de prix (1 = €, 2 = €€, 3 = €€€, 4 = €€€€)", example = "2", minimum = "1", maximum = "4")
+    @Column(name = "price_range")
+    private Integer priceRange;
+
     // ── Horaires ─────────────────────────────────────────────────────────────
 
     @Schema(description = "Créneaux horaires du bar (ouverture, cuisine, happy hours)")
@@ -130,6 +136,9 @@ public class Bar {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public Integer getPriceRange() { return priceRange; }
+    public void setPriceRange(Integer priceRange) { this.priceRange = priceRange; }
 
     public List<BarSchedule> getSchedules() { return schedules; }
     public void setSchedules(List<BarSchedule> schedules) { this.schedules = schedules; }
