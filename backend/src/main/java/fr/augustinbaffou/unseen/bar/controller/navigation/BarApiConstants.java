@@ -9,6 +9,7 @@ public final class BarApiConstants {
     public static final String BASE_PATH        = "/public/bars";
     public static final String BY_ID_PATH       = "/{id}";
     public static final String BY_OSM_ID_PATH   = "/osm/{osmId}";
+    public static final String BY_TYPE_PATH     = "/type/{type}";
 
     public static final String BASE_ADMIN_PATH  = "/admin/bars";
     public static final String IMPORT_OSM_PATH  = "/import/osm/{type}/{id}";
@@ -48,9 +49,17 @@ public final class BarApiConstants {
     public static final String OSM_NUMERIC_ID_PARAM_DESCRIPTION = "Identifiant numérique OSM";
     public static final String OSM_NUMERIC_ID_PARAM_EXAMPLE     = "123456789";
 
+    // ── GET by type ───────────────────────────────────────────────────────────
+
+    public static final String GET_BY_TYPE_SUMMARY     = "Filtre les bars par type";
+    public static final String GET_BY_TYPE_DESCRIPTION = "Retourne tous les établissements possédant le type demandé. La liste peut être vide si aucun bar n'a ce type assigné.";
+    public static final String TYPE_PARAM_DESCRIPTION  = "Type de bar (valeur de l'énumération BarType, ex. COCKTAIL_BAR)";
+    public static final String TYPE_PARAM_EXAMPLE      = "COCKTAIL_BAR";
+
     // ── Descriptions des réponses @ApiResponse ────────────────────────────────
 
     public static final String RESP_200_LIST           = "Liste retournée avec succès";
+    public static final String RESP_200_LIST_BY_TYPE   = "Liste des bars du type demandé retournée avec succès";
     public static final String RESP_200_FOUND          = "Bar trouvé";
     public static final String RESP_201_CREATED        = "Bar importé et créé avec succès";
     public static final String RESP_400_TYPE           = "L'identifiant fourni n'est pas un entier valide";

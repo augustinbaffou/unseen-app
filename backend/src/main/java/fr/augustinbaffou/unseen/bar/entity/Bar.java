@@ -1,13 +1,16 @@
 package fr.augustinbaffou.unseen.bar.entity;
 
+import fr.augustinbaffou.unseen.bargame.entity.BarGame;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Schema(description = "Établissement (bar, café, pub) importé depuis OpenStreetMap")
 @Entity
@@ -64,6 +67,15 @@ public class Bar {
     @Schema(description = "Jeux disponibles dans l'établissement")
     @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BarGame> games = new ArrayList<>();
+
+    // ── Catégories ────────────────────────────────────────────────────────────
+
+    @Schema(description = "Types de l'établissement (cocktail_bar, pub, nightclub…)")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "bar_type", joinColumns = @JoinColumn(name = "bar_id"))
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Set<BarType> types = new HashSet<>();
 
     // ── Terrasse / intérieur ──────────────────────────────────────────────────
     // Valeur brute OSM conservée (yes / no / terrace / pedestrian_zone / …)
@@ -176,4 +188,7 @@ public class Bar {
 
     public Map<String, Object> getRawTags() { return rawTags; }
     public void setRawTags(Map<String, Object> rawTags) { this.rawTags = rawTags; }
+
+    public Set<BarType> getTypes() { return types; }
+    public void setTypes(Set<BarType> types) { this.types = types; }
 }
