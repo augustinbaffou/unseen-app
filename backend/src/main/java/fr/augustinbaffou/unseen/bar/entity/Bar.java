@@ -68,6 +68,13 @@ public class Bar {
     @OneToMany(mappedBy = "bar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BarGame> games = new ArrayList<>();
 
+    // ── Confiance ─────────────────────────────────────────────────────────────
+
+    @Schema(description = "Niveau de confiance des données (RAW_OSM → COMMUNITY → VERIFIED → CLAIMED)", example = "RAW_OSM")
+    @Column(name = "data_trust", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BarDataTrust dataTrust = BarDataTrust.RAW_OSM;
+
     // ── Catégories ────────────────────────────────────────────────────────────
 
     @Schema(description = "Types de l'établissement (cocktail_bar, pub, nightclub…)")
@@ -191,4 +198,7 @@ public class Bar {
 
     public Set<BarType> getTypes() { return types; }
     public void setTypes(Set<BarType> types) { this.types = types; }
+
+    public BarDataTrust getDataTrust() { return dataTrust; }
+    public void setDataTrust(BarDataTrust dataTrust) { this.dataTrust = dataTrust; }
 }
