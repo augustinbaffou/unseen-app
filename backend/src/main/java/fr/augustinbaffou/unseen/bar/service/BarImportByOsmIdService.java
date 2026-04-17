@@ -9,10 +9,14 @@ import fr.augustinbaffou.unseen.commun.exception.ResourceAlreadyExistsException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import fr.augustinbaffou.unseen.commun.service.BaseService;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 import static fr.augustinbaffou.unseen.bar.controller.navigation.BarExceptionConstants.*;
 
@@ -28,7 +32,10 @@ public class BarImportByOsmIdService extends BaseService<String, Bar> {
     private final OsmBarMapper osmBarMapper;
 
     public BarImportByOsmIdService(RestClient.Builder restClientBuilder, BarRepository barRepository, OsmBarMapper osmBarMapper) {
-        this.restClient    = restClientBuilder.baseUrl(OVERPASS_BASE_URL).build();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(5));
+        factory.setReadTimeout(Duration.ofSeconds(15));
+        this.restClient    = restClientBuilder.baseUrl(OVERPASS_BASE_URL).requestFactory(factory).build();
         this.barRepository = barRepository;
         this.osmBarMapper  = osmBarMapper;
     }
@@ -37,7 +44,12 @@ public class BarImportByOsmIdService extends BaseService<String, Bar> {
      * @param osmId format "node/123456789" ou "way/123456789"
      */
     @Override
+    @Transactional
     public Bar execute(String osmId) {
+        if (!osmId.matches("(node|way)/\\d+")) {
+            throw new IllegalArgumentException(INVALID_OSM_ID_FORMAT.formatted(osmId));
+        }
+
         if (barRepository.existsByOsmId(osmId)) {
             throw new ResourceAlreadyExistsException(RESOURCE_NAME, FIELD_OSM_ID, osmId);
         }

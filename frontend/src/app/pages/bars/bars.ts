@@ -36,12 +36,14 @@ export const BAR_TYPE_LABELS: Record<BarType, string> = {
   PET_FRIENDLY:    'Bar à animaux',
 };
 
-const DATA_TRUST_CONFIG: Record<BarDataTrust, { label: string; color: string }> = {
-  RAW_OSM:   { label: 'Données publiques',  color: '#8C8C8C' },
-  COMMUNITY: { label: 'Validé par la communauté',   color: '#6A7D5A' },
-  VERIFIED:  { label: 'Vérifié par Unseen',      color: '#5775e2' },
-  CLAIMED:   { label: 'Certifié par le gérant',     color: '#d48a73' },
+const DATA_TRUST_CONFIG: Record<BarDataTrust, { label: string; color: string; bgColor: string; borderColor: string }> = {
+  RAW_OSM:   { label: 'Données publiques',        color: '#8C8C8C', bgColor: '#8C8C8C20', borderColor: '#8C8C8C50' },
+  COMMUNITY: { label: 'Validé par la communauté', color: '#6A7D5A', bgColor: '#6A7D5A20', borderColor: '#6A7D5A50' },
+  VERIFIED:  { label: 'Vérifié par Unseen',       color: '#5775e2', bgColor: '#5775e220', borderColor: '#5775e250' },
+  CLAIMED:   { label: 'Certifié par le gérant',   color: '#d48a73', bgColor: '#d48a7320', borderColor: '#d48a7350' },
 };
+
+const ACTIVE_FILTER_STYLE = { color: '#5775e2', bgColor: '#5775e220', borderColor: '#5775e250' };
 
 @Component({
   selector: 'app-bars',
@@ -104,16 +106,18 @@ export class BarsComponent {
     return parts.length ? parts.join(' ') : (bar.addrCity ?? '');
   }
 
+  readonly activeFilterStyle = ACTIVE_FILTER_STYLE;
+
   trustColor(dataTrust: BarDataTrust): string {
     return DATA_TRUST_CONFIG[dataTrust]?.color ?? '#8C8C8C';
   }
 
   trustBgColor(dataTrust: BarDataTrust): string {
-    return this.trustColor(dataTrust) + '20';
+    return DATA_TRUST_CONFIG[dataTrust]?.bgColor ?? '#8C8C8C20';
   }
 
   trustBorderColor(dataTrust: BarDataTrust): string {
-    return this.trustColor(dataTrust) + '50';
+    return DATA_TRUST_CONFIG[dataTrust]?.borderColor ?? '#8C8C8C50';
   }
 
   trustLabel(dataTrust: BarDataTrust): string {

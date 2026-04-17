@@ -48,9 +48,9 @@
               [class.border-beige]="selectedType() !== type"
               [class.text-smoke]="selectedType() !== type"
               [class.hover\:border-terracotta]="selectedType() !== type"
-              [style.color]="selectedType() === type ? trustColor('VERIFIED') : ''"
-              [style.background-color]="selectedType() === type ? trustBgColor('VERIFIED') : ''"
-              [style.border-color]="selectedType() === type ? trustBorderColor('VERIFIED') : ''"
+              [style.color]="selectedType() === type ? activeFilterStyle.color : ''"
+              [style.background-color]="selectedType() === type ? activeFilterStyle.bgColor : ''"
+              [style.border-color]="selectedType() === type ? activeFilterStyle.borderColor : ''"
               [attr.aria-pressed]="selectedType() === type"
             >
               {{ typeLabel(type) }}

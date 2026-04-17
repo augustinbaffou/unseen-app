@@ -5,11 +5,14 @@ import fr.augustinbaffou.unseen.commun.exception.ResourceAlreadyExistsException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import fr.augustinbaffou.unseen.commun.exception.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,6 +34,31 @@ public class GlobalExceptionHandler {
         return ErrorResponse.of(
                 HttpStatus.CONFLICT.value(),
                 ExceptionMessages.HTTP_CONFLICT,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
+        String message = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getMessage())
+                .collect(Collectors.joining(", "));
+        return ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                ExceptionMessages.HTTP_BAD_REQUEST,
+                message,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(IllegalArgumentException ex, HttpServletRequest request) {
+        return ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                ExceptionMessages.HTTP_BAD_REQUEST,
                 ex.getMessage(),
                 request.getRequestURI()
         );

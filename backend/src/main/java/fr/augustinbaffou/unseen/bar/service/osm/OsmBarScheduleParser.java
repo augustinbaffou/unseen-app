@@ -14,8 +14,9 @@ import java.util.Map;
  * Parseur best-effort du format OSM opening_hours.
  *
  * Supporte :
- *   - 24/7
+ *   - 24/7 → is24h = true sur chaque entrée (opensAt/closesAt laissés null)
  *   - Plages de jours : Mo-Fr 08:00-20:00
+ *   - Plages avec wraparound : Sa-Mo (samedi → lundi en passant par dimanche)
  *   - Jours séparés par virgule : Mo,We,Fr 10:00-20:00
  *   - Créneaux multiples dans la journée : Mo-Fr 08:00-12:00, 14:00-22:00
  *   - Règles multiples : Mo-Fr 08:00-20:00; Sa-Su 12:00-22:00
@@ -47,7 +48,7 @@ public final class OsmBarScheduleParser {
 
         if ("24/7".equals(trimmed)) {
             return Arrays.stream(DayOfWeek.values())
-                    .map(day -> buildSlot(type, day, LocalTime.MIDNIGHT, LocalTime.MIDNIGHT))
+                    .map(day -> build24hSlot(type, day))
                     .toList();
         }
 
@@ -87,9 +88,19 @@ public final class OsmBarScheduleParser {
                 String[] range = segment.split("-", 2);
                 int start = DAY_ORDER.indexOf(range[0].trim());
                 int end   = DAY_ORDER.indexOf(range[1].trim());
-                if (start >= 0 && end >= 0 && start <= end) {
-                    for (int i = start; i <= end; i++) {
-                        result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                if (start >= 0 && end >= 0) {
+                    if (start <= end) {
+                        for (int i = start; i <= end; i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
+                    } else {
+                        // Wraparound: ex. Sa-Mo → Sa, Su, Mo
+                        for (int i = start; i < DAY_ORDER.size(); i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
+                        for (int i = 0; i <= end; i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
                     }
                 }
             } else {
@@ -116,6 +127,14 @@ public final class OsmBarScheduleParser {
             }
         }
         return result;
+    }
+
+    private static BarSchedule build24hSlot(BarScheduleType type, DayOfWeek day) {
+        BarSchedule slot = new BarSchedule();
+        slot.setType(type);
+        slot.setDayOfWeek(day);
+        slot.set24h(true);
+        return slot;
     }
 
     private static BarSchedule buildSlot(BarScheduleType type, DayOfWeek day, LocalTime open, LocalTime close) {

@@ -63,6 +63,7 @@ public final class BarApiConstants {
     public static final String RESP_200_FOUND          = "Bar trouvé";
     public static final String RESP_201_CREATED        = "Bar importé et créé avec succès";
     public static final String RESP_400_TYPE           = "L'identifiant fourni n'est pas un entier valide";
+    public static final String RESP_400_OSM_TYPE       = "Le type OSM fourni est invalide (valeurs acceptées : node, way)";
     public static final String RESP_404_BY_ID          = "Aucun bar trouvé pour cet identifiant";
     public static final String RESP_404_BY_OSM_ID      = "Aucun bar trouvé pour cet identifiant OSM";
     public static final String RESP_404_OSM_NOT_FOUND  = "Aucun élément OSM trouvé pour cet identifiant";

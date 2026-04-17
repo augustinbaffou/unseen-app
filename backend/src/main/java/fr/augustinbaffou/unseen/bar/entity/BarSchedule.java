@@ -32,12 +32,16 @@ public class BarSchedule {
     @Column(name = "day_of_week", nullable = false)
     private DayOfWeek dayOfWeek;
 
-    @Schema(description = "Heure de début (00:00 si ouvert toute la journée)", example = "17:00")
-    @Column(name = "opens_at", nullable = false)
+    @Schema(description = "Vrai si l'établissement est ouvert en continu (24h/24). Quand true, opensAt et closesAt sont ignorés.", example = "false")
+    @Column(name = "is_24h", nullable = false)
+    private boolean is24h = false;
+
+    @Schema(description = "Heure de début. Ignoré si is24h = true.", example = "17:00")
+    @Column(name = "opens_at")
     private LocalTime opensAt;
 
-    @Schema(description = "Heure de fin (00:00 si ouvert toute la journée ; peut être inférieure à opens_at si fermeture après minuit)", example = "20:00")
-    @Column(name = "closes_at", nullable = false)
+    @Schema(description = "Heure de fin. Peut être inférieure à opensAt si fermeture après minuit. Ignoré si is24h = true.", example = "20:00")
+    @Column(name = "closes_at")
     private LocalTime closesAt;
 
     @Schema(description = "Détails de l'offre happy hour (uniquement si type = HAPPY_HOUR)", example = "Pinte à 5€ / Cocktail -30%")
@@ -57,6 +61,9 @@ public class BarSchedule {
 
     public DayOfWeek getDayOfWeek() { return dayOfWeek; }
     public void setDayOfWeek(DayOfWeek dayOfWeek) { this.dayOfWeek = dayOfWeek; }
+
+    public boolean is24h() { return is24h; }
+    public void set24h(boolean is24h) { this.is24h = is24h; }
 
     public LocalTime getOpensAt() { return opensAt; }
     public void setOpensAt(LocalTime opensAt) { this.opensAt = opensAt; }

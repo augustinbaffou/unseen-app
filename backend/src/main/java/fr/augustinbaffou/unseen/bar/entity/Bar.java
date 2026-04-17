@@ -78,8 +78,12 @@ public class Bar {
     // ── Catégories ────────────────────────────────────────────────────────────
 
     @Schema(description = "Types de l'établissement (cocktail_bar, pub, nightclub…)")
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "bar_type", joinColumns = @JoinColumn(name = "bar_id"))
+    @ElementCollection
+    @CollectionTable(
+            name = "bar_type",
+            joinColumns = @JoinColumn(name = "bar_id"),
+            uniqueConstraints = @UniqueConstraint(name = "uq_bar_type_bar_id_type", columnNames = {"bar_id", "type"})
+    )
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private Set<BarType> types = new HashSet<>();
