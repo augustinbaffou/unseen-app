@@ -13,6 +13,10 @@ export const routes: Routes = [
     component: MapComponent
   },
   {
+    path: 'bars',
+    loadComponent: () => import('./pages/bars/bars').then(m => m.BarsComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent)
   },

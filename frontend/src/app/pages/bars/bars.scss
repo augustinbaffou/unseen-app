@@ -1,0 +1,17 @@
+.bar-card {
+  box-shadow: var(--shadow-subtle);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+
+  &:hover {
+    box-shadow: var(--shadow-standard);
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

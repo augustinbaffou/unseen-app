@@ -71,7 +71,7 @@ public class Bar {
     // ── Confiance ─────────────────────────────────────────────────────────────
 
     @Schema(description = "Niveau de confiance des données (RAW_OSM → COMMUNITY → VERIFIED → CLAIMED)", example = "RAW_OSM")
-    @Column(name = "data_trust", nullable = false)
+    @Column(name = "data_trust", nullable = false, columnDefinition = "varchar(255) default 'RAW_OSM'")
     @Enumerated(EnumType.STRING)
     private BarDataTrust dataTrust = BarDataTrust.RAW_OSM;
 
