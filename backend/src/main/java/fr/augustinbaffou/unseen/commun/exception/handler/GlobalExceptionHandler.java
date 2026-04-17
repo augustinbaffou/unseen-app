@@ -1,6 +1,7 @@
 package fr.augustinbaffou.unseen.commun.exception.handler;
 
 import fr.augustinbaffou.unseen.commun.exception.ExceptionMessages;
+import fr.augustinbaffou.unseen.commun.exception.ExternalServiceException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceAlreadyExistsException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import fr.augustinbaffou.unseen.commun.exception.dto.ErrorResponse;
@@ -49,6 +50,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 ExceptionMessages.HTTP_BAD_REQUEST,
                 message,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ErrorResponse handleExternalService(ExternalServiceException ex, HttpServletRequest request) {
+        return ErrorResponse.of(
+                HttpStatus.BAD_GATEWAY.value(),
+                ExceptionMessages.HTTP_BAD_GATEWAY,
+                ex.getMessage(),
                 request.getRequestURI()
         );
     }

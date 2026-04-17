@@ -5,9 +5,12 @@ import fr.augustinbaffou.unseen.bar.repository.BarRepository;
 import fr.augustinbaffou.unseen.bar.service.osm.OsmBarMapper;
 import fr.augustinbaffou.unseen.bar.service.osm.dto.OverpassElement;
 import fr.augustinbaffou.unseen.bar.service.osm.dto.OverpassResponse;
+import fr.augustinbaffou.unseen.commun.exception.ExternalServiceException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceAlreadyExistsException;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import fr.augustinbaffou.unseen.commun.service.BaseService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import org.springframework.web.client.RestClient;
 import java.time.Duration;
 
 import static fr.augustinbaffou.unseen.bar.controller.navigation.BarExceptionConstants.*;
+import static fr.augustinbaffou.unseen.commun.exception.ExceptionMessages.*;
 
 @Service
 public class BarImportByOsmIdService extends BaseService<String, Bar> {
@@ -68,6 +72,10 @@ public class BarImportByOsmIdService extends BaseService<String, Bar> {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(formData)
                 .retrieve()
+                .onStatus(status -> status == HttpStatus.TOO_MANY_REQUESTS,
+                        (req, res) -> { throw new ExternalServiceException(EXTERNAL_RATE_LIMITED); })
+                .onStatus(HttpStatusCode::is5xxServerError,
+                        (req, res) -> { throw new ExternalServiceException(EXTERNAL_UNAVAILABLE.formatted(res.getStatusCode().value())); })
                 .body(OverpassResponse.class);
 
         OverpassElement element = findElement(response, type, numericId, osmId);

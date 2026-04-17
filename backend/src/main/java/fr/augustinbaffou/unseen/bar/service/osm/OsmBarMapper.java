@@ -9,11 +9,7 @@ import fr.augustinbaffou.unseen.bar.service.osm.dto.OverpassElement;
 import fr.augustinbaffou.unseen.commun.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Mappe un élément Overpass vers l'entité Bar.
@@ -67,7 +63,7 @@ public class OsmBarMapper {
         bar.setTypes(resolveTypes(tags));
 
         // Données brutes
-        bar.setRawTags(Map.copyOf(tags));
+        bar.setRawTags(new HashMap<>(tags));
 
         // Horaires
         List<BarSchedule> slots = new ArrayList<>();

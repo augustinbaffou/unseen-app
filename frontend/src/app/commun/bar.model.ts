@@ -22,8 +22,9 @@ export interface BarSchedule {
   id: number;
   type: 'BAR' | 'KITCHEN' | 'HAPPY_HOUR';
   dayOfWeek: string;
-  opensAt: string;
-  closesAt: string;
+  is24h: boolean;
+  opensAt?: string;
+  closesAt?: string;
   happyHourDetails?: string;
 }
 
