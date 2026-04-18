@@ -8,6 +8,25 @@
         <p class="hidden md:block font-body text-sm text-smoke m-0">Votre guide des bars de Nantes</p>
       </div>
 
+      <!-- Navigation principale -->
+      <nav class="hidden md:flex items-center gap-1" aria-label="Navigation principale">
+        <a
+          routerLink="/"
+          routerLinkActive="text-charcoal font-semibold"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="font-body text-sm text-smoke hover:text-charcoal px-3 py-1.5 rounded-btn hover:bg-overlay transition-colors"
+        >
+          Carte
+        </a>
+        <a
+          routerLink="/bars"
+          routerLinkActive="text-charcoal font-semibold"
+          class="font-body text-sm text-smoke hover:text-charcoal px-3 py-1.5 rounded-btn hover:bg-overlay transition-colors"
+        >
+          Bars
+        </a>
+      </nav>
+
       <!-- Contrôles droite -->
       <div class="flex items-center gap-2">
 

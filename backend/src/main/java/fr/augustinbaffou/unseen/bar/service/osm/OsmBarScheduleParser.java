@@ -1,0 +1,148 @@
+package fr.augustinbaffou.unseen.bar.service.osm;
+
+import fr.augustinbaffou.unseen.bar.entity.BarSchedule;
+import fr.augustinbaffou.unseen.bar.entity.BarScheduleType;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Parseur best-effort du format OSM opening_hours.
+ *
+ * Supporte :
+ *   - 24/7 → is24h = true sur chaque entrée (opensAt/closesAt laissés null)
+ *   - Plages de jours : Mo-Fr 08:00-20:00
+ *   - Plages avec wraparound : Sa-Mo (samedi → lundi en passant par dimanche)
+ *   - Jours séparés par virgule : Mo,We,Fr 10:00-20:00
+ *   - Créneaux multiples dans la journée : Mo-Fr 08:00-12:00, 14:00-22:00
+ *   - Règles multiples : Mo-Fr 08:00-20:00; Sa-Su 12:00-22:00
+ *   - Fermeture après minuit : closes_at < opens_at (ex: Sa 22:00-02:00)
+ *   - Règles "off" : ignorées (pas de ligne créée)
+ *
+ * Les chaînes non reconnues sont silencieusement ignorées.
+ */
+public final class OsmBarScheduleParser {
+
+    private OsmBarScheduleParser() {}
+
+    private static final List<String> DAY_ORDER = List.of("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su");
+
+    private static final Map<String, DayOfWeek> DAY_MAP = Map.of(
+            "Mo", DayOfWeek.MONDAY,
+            "Tu", DayOfWeek.TUESDAY,
+            "We", DayOfWeek.WEDNESDAY,
+            "Th", DayOfWeek.THURSDAY,
+            "Fr", DayOfWeek.FRIDAY,
+            "Sa", DayOfWeek.SATURDAY,
+            "Su", DayOfWeek.SUNDAY
+    );
+
+    public static List<BarSchedule> parse(String raw, BarScheduleType type) {
+        if (raw == null || raw.isBlank()) return List.of();
+
+        String trimmed = raw.trim();
+
+        if ("24/7".equals(trimmed)) {
+            return Arrays.stream(DayOfWeek.values())
+                    .map(day -> build24hSlot(type, day))
+                    .toList();
+        }
+
+        List<BarSchedule> result = new ArrayList<>();
+        for (String rule : trimmed.split(";")) {
+            result.addAll(parseRule(rule.trim(), type));
+        }
+        return result;
+    }
+
+    private static List<BarSchedule> parseRule(String rule, BarScheduleType type) {
+        if (rule.endsWith("off")) return List.of();
+
+        int spaceIdx = rule.indexOf(' ');
+        if (spaceIdx < 0) return List.of();
+
+        String dayPart  = rule.substring(0, spaceIdx).trim();
+        String timePart = rule.substring(spaceIdx + 1).trim();
+
+        List<DayOfWeek> days      = expandDays(dayPart);
+        List<LocalTime[]> slots   = parseTimeSlots(timePart);
+
+        List<BarSchedule> result = new ArrayList<>();
+        for (DayOfWeek day : days) {
+            for (LocalTime[] slot : slots) {
+                result.add(buildSlot(type, day, slot[0], slot[1]));
+            }
+        }
+        return result;
+    }
+
+    private static List<DayOfWeek> expandDays(String dayPart) {
+        List<DayOfWeek> result = new ArrayList<>();
+        for (String segment : dayPart.split(",")) {
+            segment = segment.trim();
+            if (segment.contains("-")) {
+                String[] range = segment.split("-", 2);
+                int start = DAY_ORDER.indexOf(range[0].trim());
+                int end   = DAY_ORDER.indexOf(range[1].trim());
+                if (start >= 0 && end >= 0) {
+                    if (start <= end) {
+                        for (int i = start; i <= end; i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
+                    } else {
+                        // Wraparound: ex. Sa-Mo → Sa, Su, Mo
+                        for (int i = start; i < DAY_ORDER.size(); i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
+                        for (int i = 0; i <= end; i++) {
+                            result.add(DAY_MAP.get(DAY_ORDER.get(i)));
+                        }
+                    }
+                }
+            } else {
+                DayOfWeek day = DAY_MAP.get(segment);
+                if (day != null) result.add(day);
+            }
+        }
+        return result;
+    }
+
+    private static List<LocalTime[]> parseTimeSlots(String timePart) {
+        List<LocalTime[]> result = new ArrayList<>();
+        for (String slot : timePart.split(",")) {
+            slot = slot.trim();
+            String[] times = slot.split("-", 2);
+            if (times.length == 2) {
+                try {
+                    LocalTime open  = LocalTime.parse(times[0].trim());
+                    LocalTime close = LocalTime.parse(times[1].trim());
+                    result.add(new LocalTime[]{open, close});
+                } catch (Exception ignored) {
+                    // créneau non reconnu, on l'ignore silencieusement
+                }
+            }
+        }
+        return result;
+    }
+
+    private static BarSchedule build24hSlot(BarScheduleType type, DayOfWeek day) {
+        BarSchedule slot = new BarSchedule();
+        slot.setType(type);
+        slot.setDayOfWeek(day);
+        slot.set24h(true);
+        return slot;
+    }
+
+    private static BarSchedule buildSlot(BarScheduleType type, DayOfWeek day, LocalTime open, LocalTime close) {
+        BarSchedule slot = new BarSchedule();
+        slot.setType(type);
+        slot.setDayOfWeek(day);
+        slot.setOpensAt(open);
+        slot.setClosesAt(close);
+        return slot;
+    }
+}

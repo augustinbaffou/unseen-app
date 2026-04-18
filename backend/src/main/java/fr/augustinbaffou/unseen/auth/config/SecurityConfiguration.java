@@ -1,22 +1,23 @@
 package fr.augustinbaffou.unseen.auth.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.augustinbaffou.unseen.auth.service.OAuth2UserService;
+import fr.augustinbaffou.unseen.commun.exception.ExceptionMessages;
+import fr.augustinbaffou.unseen.commun.exception.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -31,15 +32,18 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2UserService oauth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final ObjectMapper objectMapper;
 
     public SecurityConfiguration(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             OAuth2UserService oauth2UserService,
-            OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler
+            OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+            ObjectMapper objectMapper
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oauth2UserService = oauth2UserService;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -53,6 +57,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -62,7 +67,29 @@ public class SecurityConfiguration {
                                 .oidcUserService(oauth2UserService::loadOidcUser))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, e) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write(objectMapper.writeValueAsString(
+                                    ErrorResponse.of(HttpServletResponse.SC_UNAUTHORIZED,
+                                            ExceptionMessages.HTTP_UNAUTHORIZED,
+                                            e.getMessage(),
+                                            request.getRequestURI())
+                            ));
+                        })
+                        .accessDeniedHandler((request, response, e) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write(objectMapper.writeValueAsString(
+                                    ErrorResponse.of(HttpServletResponse.SC_FORBIDDEN,
+                                            ExceptionMessages.HTTP_FORBIDDEN,
+                                            e.getMessage(),
+                                            request.getRequestURI())
+                            ));
+                        })
+                );
 
         return http.build();
     }

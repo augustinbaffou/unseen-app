@@ -1,5 +1,6 @@
 import {Component, input, output} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {RouterLink, RouterLinkActive} from '@angular/router';
 import {Observable} from 'rxjs';
 import {AuthService} from '../../auth/auth.service';
 import {ThemeService} from '../../services/theme.service';
@@ -17,7 +18,7 @@ interface User {
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, RouterLink, RouterLinkActive]
 })
 export class NavbarComponent {
   showMarkers = input(true);
