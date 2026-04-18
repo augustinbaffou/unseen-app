@@ -101,14 +101,16 @@ export class BarDetailComponent {
 
   formatHours(s: BarSchedule): string {
     if (s.is24h) return '24h/24';
-    return `${s.opensAt ?? '?'} – ${s.closesAt ?? '?'}`;
+    const fmt = (t?: string) => t?.slice(0, 5) ?? '?';
+    return `${fmt(s.opensAt)} – ${fmt(s.closesAt)}`;
   }
 
-  allDaySchedules(bar: Bar): { dayKey: string; label: string; schedule: BarSchedule | null }[] {
+  allDaySchedules(bar: Bar): { dayKey: string; label: string; schedule: BarSchedule | null; happyHour: BarSchedule | null }[] {
     return DAYS_ORDER.map(dayKey => ({
       dayKey,
       label: DAY_LABELS[dayKey],
       schedule: bar.schedules.find(s => s.type === 'BAR' && s.dayOfWeek === dayKey) ?? null,
+      happyHour: bar.schedules.find(s => s.type === 'HAPPY_HOUR' && s.dayOfWeek === dayKey) ?? null,
     }));
   }
 
@@ -119,6 +121,104 @@ export class BarDetailComponent {
     const times = this.formatHours(hhs[0]);
     const details = hhs[0].happyHourDetails;
     return `${days}, ${times}${details ? ' · ' + details : ''}`;
+  }
+
+  readonly todayKey = DAYS_ORDER[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+
+  private timeToMin(t: string): number {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  private nextOpeningDetail(bar: Bar, fromDayIdx: number): string {
+    for (let i = 1; i <= 7; i++) {
+      const key = DAYS_ORDER[(fromDayIdx + i) % 7];
+      const sched = bar.schedules.find(s => s.type === 'BAR' && s.dayOfWeek === key);
+      if (sched?.opensAt) {
+        const dayLabel = i === 1 ? 'demain' : DAY_LABELS[key].slice(0, 3).toLowerCase() + '.';
+        return `ouvre ${dayLabel} à ${sched.opensAt.slice(0, 5)}`;
+      }
+    }
+    return 'horaires non renseignés';
+  }
+
+  barStatus(bar: Bar): { type: string; label: string } {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const dayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const todayKey = DAYS_ORDER[dayIdx];
+    const yesterdayKey = DAYS_ORDER[(dayIdx + 6) % 7];
+    const fmt = (t: string) => t.slice(0, 5);
+
+    const todaySched = bar.schedules.find(s => s.type === 'BAR' && s.dayOfWeek === todayKey) ?? null;
+    const yesterdaySched = bar.schedules.find(s => s.type === 'BAR' && s.dayOfWeek === yesterdayKey) ?? null;
+
+    // Fenêtre nocturne de la veille (ex. ouvert 17h→02h, on est à 01h20)
+    if (yesterdaySched?.opensAt && yesterdaySched?.closesAt && !yesterdaySched.is24h) {
+      const oMin = this.timeToMin(yesterdaySched.opensAt);
+      const cMin = this.timeToMin(yesterdaySched.closesAt);
+      if (cMin < oMin && nowMin < cMin) {
+        const left = cMin - nowMin;
+        if (left <= 30) return { type: 'CLOSES_SOON', label: `Ferme dans ${left} min` };
+        return { type: 'OPEN', label: `Ouvert en ce moment · ferme à ${fmt(yesterdaySched.closesAt)}` };
+      }
+    }
+
+    if (!todaySched) return { type: 'CLOSED', label: `Fermé · ${this.nextOpeningDetail(bar, dayIdx)}` };
+    if (todaySched.is24h) return { type: 'OPEN', label: 'Ouvert 24h/24' };
+    if (!todaySched.opensAt || !todaySched.closesAt) return { type: 'CLOSED', label: `Fermé · ${this.nextOpeningDetail(bar, dayIdx)}` };
+
+    const openMin = this.timeToMin(todaySched.opensAt);
+    const closeMin = this.timeToMin(todaySched.closesAt);
+
+    if (closeMin > openMin) {
+      // Horaires normaux (ex. 09h→22h)
+      if (nowMin >= openMin && nowMin < closeMin) {
+        const left = closeMin - nowMin;
+        if (left <= 30) return { type: 'CLOSES_SOON', label: `Ferme dans ${left} min` };
+        return { type: 'OPEN', label: `Ouvert en ce moment · ferme à ${fmt(todaySched.closesAt)}` };
+      }
+      if (nowMin < openMin && openMin - nowMin <= 60)
+        return { type: 'OPENS_SOON', label: `Fermé · ouvre à ${fmt(todaySched.opensAt)}` };
+    } else {
+      // Horaires nocturnes (ex. 17h→02h) — côté soirée
+      if (nowMin >= openMin) {
+        const left = 24 * 60 - nowMin + closeMin;
+        if (left <= 30) return { type: 'CLOSES_SOON', label: `Ferme dans ${left} min` };
+        return { type: 'OPEN', label: `Ouvert en ce moment · ferme à ${fmt(todaySched.closesAt)}` };
+      }
+      if (openMin - nowMin <= 60)
+        return { type: 'OPENS_SOON', label: `Fermé · ouvre à ${fmt(todaySched.opensAt)}` };
+    }
+
+    return { type: 'CLOSED', label: `Fermé · ${this.nextOpeningDetail(bar, dayIdx)}` };
+  }
+
+  hhStatus(bar: Bar): { label: string } | null {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const dayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const hh = bar.schedules.find(s => s.type === 'HAPPY_HOUR' && s.dayOfWeek === DAYS_ORDER[dayIdx]);
+    if (!hh?.opensAt || !hh?.closesAt) return null;
+    const openMin = this.timeToMin(hh.opensAt);
+    const closeMin = this.timeToMin(hh.closesAt);
+    if (nowMin >= openMin && nowMin < closeMin)
+      return { label: `Happy hour · jusqu'à ${hh.closesAt.slice(0, 5)}` };
+    if (nowMin < openMin && openMin - nowMin <= 30)
+      return { label: `Happy hour dans ${openMin - nowMin} min` };
+    return null;
+  }
+
+  statusColor(type: string): string {
+    return ({ OPEN: '#3a7c52', CLOSES_SOON: '#b87333', OPENS_SOON: '#b87333', CLOSED: '#9E9E9E' } as Record<string, string>)[type] ?? '#9E9E9E';
+  }
+
+  statusBg(type: string): string {
+    return ({ OPEN: '#3a7c5210', CLOSES_SOON: '#b8733310', OPENS_SOON: '#b8733310', CLOSED: '#9E9E9E0D' } as Record<string, string>)[type] ?? '#9E9E9E0D';
+  }
+
+  statusBorderColor(type: string): string {
+    return ({ OPEN: '#3a7c5225', CLOSES_SOON: '#b8733325', OPENS_SOON: '#b8733325', CLOSED: '#9E9E9E20' } as Record<string, string>)[type] ?? '#9E9E9E20';
   }
 
   mapsUrl(bar: Bar): string {

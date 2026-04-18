@@ -155,26 +155,75 @@
       }
 
       <!-- ── Horaires ───────────────────────────────────────────────── -->
-      <section class="bg-surface border border-beige rounded-card p-5" style="box-shadow: 0 2px 8px rgba(43,45,46,0.08)">
+      <section class="bg-surface border border-beige rounded-card overflow-hidden" style="box-shadow: 0 2px 8px rgba(43,45,46,0.08)">
+        @let status = barStatus(bar()!);
+        @let hh = hhStatus(bar()!);
+        <div class="px-5 py-2.5 flex items-center justify-between"
+             [style.background]="statusBg(status.type)"
+             [style.border-bottom]="'1px solid ' + statusBorderColor(status.type)">
+          <span class="font-accent text-xs font-semibold flex items-center gap-2"
+                [style.color]="statusColor(status.type)">
+            @if (status.type === 'OPEN') {
+              <span class="dot-open"></span>
+            } @else if (status.type === 'CLOSES_SOON' || status.type === 'OPENS_SOON') {
+              <span class="dot-soon"></span>
+            } @else {
+              <span style="width:8px;height:8px;border-radius:50%;background:#9E9E9E;display:inline-block;flex-shrink:0"></span>
+            }
+            {{ status.label }}
+          </span>
+          @if (hh) {
+            <span class="font-accent text-xs font-medium text-terracotta">{{ hh.label }}</span>
+          }
+        </div>
+        <div class="p-5">
         <h3 class="font-accent text-xs font-medium text-muted uppercase tracking-wider mb-3">Horaires</h3>
         <table class="w-full">
+          <thead>
+            <tr class="border-b border-beige">
+              <th class="font-accent text-xs text-muted pb-2 text-left w-24"></th>
+              @if (happyHourSchedules(bar()!).length > 0) {
+                <th class="font-accent text-xs text-terracotta pb-2 text-right pl-4">Happy Hour</th>
+              }
+              <th class="font-accent text-xs text-muted pb-2 text-right">Ouverture</th>
+            </tr>
+          </thead>
           <tbody>
             @for (row of allDaySchedules(bar()!); track row.dayKey) {
               <tr class="border-b border-beige last:border-0">
-                <td class="font-body text-sm text-charcoal py-2">{{ row.label }}</td>
-                <td class="font-body text-sm text-smoke py-2 text-right">
+                <td class="font-body text-sm py-2 text-charcoal"
+                    [class.font-semibold]="row.dayKey === todayKey">
+                  @if (row.dayKey === todayKey) {
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="text-terracotta" style="font-size:8px;line-height:1">●</span>
+                      {{ row.label }}
+                    </span>
+                  } @else {
+                    {{ row.label }}
+                  }
+                </td>
+                @if (happyHourSchedules(bar()!).length > 0) {
+                  <td class="font-body text-terracotta text-xs py-2 text-right pl-4">
+                    {{ row.happyHour ? formatHours(row.happyHour) : '–' }}
+                  </td>
+                }
+                <td class="font-body text-sm py-2 text-right"
+                    [class.text-smoke]="row.dayKey !== todayKey"
+                    [class.text-charcoal]="row.dayKey === todayKey"
+                    [class.font-semibold]="row.dayKey === todayKey">
                   {{ row.schedule ? formatHours(row.schedule) : 'Fermé' }}
                 </td>
               </tr>
             }
           </tbody>
         </table>
-        @if (happyHourSchedules(bar()!).length > 0) {
+        @if (happyHourSchedules(bar()!).length > 0 && happyHourSchedules(bar()!)[0].happyHourDetails) {
           <div class="mt-3 pt-3 border-t border-beige">
             <p class="font-accent text-xs font-medium text-terracotta uppercase tracking-wider mb-1">Happy Hour</p>
-            <p class="font-body text-xs text-smoke">{{ happyHourSummary(bar()!) }}</p>
+            <p class="font-body text-xs text-smoke italic">{{ happyHourSchedules(bar()!)[0].happyHourDetails }}</p>
           </div>
         }
+        </div>
       </section>
 
       <!-- ── Jeux disponibles ───────────────────────────────────────── -->

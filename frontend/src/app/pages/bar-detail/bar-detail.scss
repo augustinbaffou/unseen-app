@@ -1,3 +1,33 @@
 section {
   box-shadow: var(--shadow-subtle);
 }
+
+/* Dot ouvert : halo qui respire */
+@keyframes pulse-open {
+  0%, 100% { box-shadow: 0 0 0 0 #3a7c5260; opacity: 1; }
+  50%       { box-shadow: 0 0 0 5px #3a7c5200; opacity: .75; }
+}
+
+/* Dot bientôt : clignotement rapide + halo orange */
+@keyframes pulse-soon {
+  0%, 100% { box-shadow: 0 0 0 0 #b8733370; opacity: 1; }
+  40%       { box-shadow: 0 0 0 4px #b8733300; opacity: .4; }
+}
+
+.dot-open {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #3a7c52;
+  animation: pulse-open 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.dot-soon {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #b87333;
+  animation: pulse-soon 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
