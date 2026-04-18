@@ -1,6 +1,7 @@
 
 import {AfterViewInit, Component, effect, input, OnDestroy} from '@angular/core';
 import * as Leaflet from 'leaflet';
+import {Router} from '@angular/router';
 import {BarMarker} from '../../commun/bar.model';
 import {NANTES_SEARCH_RADIUS, NANTES_CENTER_COORDS} from '../../commun/config';
 import {ThemeService} from '../../services/theme.service';
@@ -36,7 +37,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
     className: 'custom-leaflet-popup'
   };
 
-  constructor(private themeService: ThemeService) {
+  constructor(private themeService: ThemeService, private router: Router) {
     effect(() => this.handleMarkersChange());
     effect(() => this.handleThemeChange());
   }
@@ -99,22 +100,28 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private addBarMarker(marker: BarMarker): void {
-    const popupContent = this.createPopupContent(marker);
-
-    Leaflet.marker([marker.lat, marker.lng])
+    const leafletMarker = Leaflet.marker([marker.lat, marker.lng])
       .addTo(this.markersLayer)
       .setIcon(this.getIconForRank(marker.rank))
-      .bindPopup(popupContent, this.POPUP_CONFIG);
+      .bindPopup(this.createPopupContent(marker), this.POPUP_CONFIG);
+
+    if (marker.id) {
+      leafletMarker.on('popupopen', () => {
+        document.getElementById(`bar-popup-btn-${marker.id}`)
+          ?.addEventListener('click', () => this.router.navigate(['/bars', marker.id]));
+      });
+    }
   }
 
   private createPopupContent(marker: BarMarker): string {
+    const btn = marker.id
+      ? `<button id="bar-popup-btn-${marker.id}" class="w-full bg-terracotta text-white text-xs font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity mt-3">Voir les détails</button>`
+      : '';
     return `
       <div class="p-1">
-        <h3 class="text-lg font-bold text-gray-900 mb-1">${marker.name}</h3>
-        <p class="text-sm text-gray-600 mb-3">${marker.description || 'Un super endroit pour se détendre entre amis.'}</p>
-        <button class="w-full bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
-          Voir les détails
-        </button>
+        <h3 class="text-base font-bold text-gray-900 mb-1">${marker.name}</h3>
+        ${marker.description ? `<p class="text-xs text-gray-500">${marker.description}</p>` : ''}
+        ${btn}
       </div>
     `;
   }

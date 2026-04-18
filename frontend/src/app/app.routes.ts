@@ -17,6 +17,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/bars/bars').then(m => m.BarsComponent)
   },
   {
+    path: 'bars/:id',
+    loadComponent: () => import('./pages/bar-detail/bar-detail').then(m => m.BarDetailComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent)
   },

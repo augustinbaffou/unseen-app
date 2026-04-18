@@ -6,6 +6,7 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {catchError, of, tap} from 'rxjs';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {RouterLink} from '@angular/router';
 
 export const BAR_TYPE_LABELS: Record<BarType, string> = {
   COCKTAIL_BAR:    'Cocktails',
@@ -50,7 +51,7 @@ const ACTIVE_FILTER_STYLE = { color: '#5775e2', bgColor: '#5775e220', borderColo
   templateUrl: './bars.html',
   styleUrls: ['./bars.scss'],
   standalone: true,
-  imports: [NavbarComponent, CommonModule, FormsModule]
+  imports: [NavbarComponent, CommonModule, FormsModule, RouterLink]
 })
 export class BarsComponent {
   private readonly barService = inject(BarService);
