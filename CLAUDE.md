@@ -51,7 +51,8 @@ npm test -- --reporter=verbose   # Single file: npm test -- src/app/foo.spec.ts
 All components use the **standalone** pattern — no NgModule. Reactive state is handled with Angular **Signals** (`signal()`, `computed()`, `toSignal()`); async sources use **RxJS Observables** converted to signals at the component boundary.
 
 **Routing** (`app.routes.ts`):
-- `/` → `MapComponent` (main page, protected by `AuthGuard` → redirects to `/login` if unauthenticated)
+- `/` → `MapComponent` (carte interactive, accessible sans authentification)
+- `/bars` → `BarsComponent` (liste avec recherche et filtres par type, lazy loaded)
 - `/login` → `LoginComponent` (lazy loaded)
 - `/oauth/callback` → `OAuthCallbackComponent` (JWT extraction from URL)
 - `**` → redirect to `/`
@@ -59,13 +60,46 @@ All components use the **standalone** pattern — no NgModule. Reactive state is
 **HTTP:** `JwtInterceptor` attaches `Authorization: Bearer <token>` to every outgoing request. Token is stored in `localStorage` under key `jwt_token`.
 
 **Services:**
+- `BarService` — `getAll()` / `getById(id)` — appelle le backend `/public/bars`
 - `OverpassService` — queries the OpenStreetMap Overpass API for bars/cafes/pubs within 7.5 km of Nantes center
 - `BarMarkerConverterService` (`bar-converter.service.ts`) — maps raw Overpass responses to `BarMarker` objects; **ranks are currently randomised** (75 % chance of `NA`, otherwise random S/A/B/C/D — placeholder pending real ranking logic)
 - `AuthService` — manages JWT in `localStorage`, decodes payload client-side (no signature check), drives Google OAuth2 redirect flow
+- `ThemeService` — dark mode toggle
 
 **Data model** (`commun/bar.model.ts`):
 ```typescript
 type BarMarker = { name: string; lat: number; lng: number; rank: string; description?: string; }
+
+type BarType = 'COCKTAIL_BAR' | 'BEER_BAR' | 'CRAFT_BEER_BAR' | 'BREWPUB' | 'SPIRITS_BAR' | 'WINE_BAR'
+             | 'DANCING_BAR' | 'LIVE_MUSIC_BAR' | 'NIGHTCLUB' | 'SPORTS_BAR' | 'ARCADE_BAR' | 'BOARD_GAME_BAR' | 'ESPORTS_BAR'
+             | 'PUB' | 'STUDENT_BAR' | 'LOUNGE_BAR' | 'GUINGUETTE'
+             | 'BRASSERIE' | 'TAPAS_BAR' | 'COFFEE_SHOP_BAR' | 'CAFE_TABAC' | 'PMU'
+             | 'WATERFRONT_BAR' | 'TERRACE_BAR' | 'ROOFTOP' | 'PET_FRIENDLY';
+
+type BarDataTrust = 'RAW_OSM' | 'COMMUNITY' | 'VERIFIED' | 'CLAIMED';
+
+interface BarSchedule {
+  id: number;
+  type: 'BAR' | 'KITCHEN' | 'HAPPY_HOUR';
+  dayOfWeek: string;        // 'MONDAY' … 'SUNDAY'
+  is24h: boolean;
+  opensAt?: string;         // 'HH:mm', ignoré si is24h
+  closesAt?: string;        // peut être < opensAt (fermeture après minuit)
+  happyHourDetails?: string;
+}
+
+interface Bar {
+  id: number; osmId: string; lat: number; lng: number;
+  name: string; altName?: string; wasName?: string; description?: string;
+  priceRange?: number;       // 1=€ … 4=€€€€
+  dataTrust: BarDataTrust;
+  types: BarType[];
+  schedules: BarSchedule[];
+  games: any[];
+  outdoorSeating?: string; indoorSeating?: string;
+  instagram?: string; facebook?: string; website?: string;
+  addrHousenumber?: string; addrStreet?: string; addrCity?: string;
+}
 ```
 
 **Map:** `LeafletMapComponent` uses CartoDB Voyager tile layer. Map center and radius are defined in `commun/config.ts` (`lat: 47.218371, lng: -1.553621`, radius 7500 m). Per-rank marker icons are loaded from `markers/light-svg/marker-pin-<rank>.svg`.
@@ -91,6 +125,19 @@ All auth logic lives under `fr.augustinbaffou.unseen.auth/`:
 - `JwtAuthenticationFilter` — validates JWT on every request
 - `JwtService` — HS256 signing, expiry configured via `security.jwt.expiration-time` (ms; default 3600000 in local profile), embeds `id/name/email/role/picture` claims
 - `User` entity — implements `UserDetails`; roles: `USER`, `ADMIN`
+
+**Bar domain** (`bar/`):
+- `Bar` entity — `bars` table; champs : osmId, lat/lng, name/altName/wasName, description, priceRange (1–4), dataTrust (enum), types (Set<BarType>), schedules (List<BarSchedule>), games (List<BarGame>), contacts, adresse, rawTags (JSONB)
+- `BarSchedule` entity — `bar_schedules` table; champs : type (BAR/KITCHEN/HAPPY_HOUR), dayOfWeek, is24h, opensAt, closesAt, happyHourDetails
+- `BarType` enum — 25 valeurs (COCKTAIL_BAR, PUB, NIGHTCLUB, LIVE_MUSIC_BAR…)
+- `BarDataTrust` enum — RAW_OSM(1) → COMMUNITY(2) → VERIFIED(3) → CLAIMED(4)
+- Endpoints publics : `GET /public/bars`, `GET /public/bars/{id}`, `GET /public/bars/osm/{osmId}`, `GET /public/bars/type/{type}`
+- Endpoint admin : `POST /admin/bars/import/{osmId}` — importe depuis l'API Overpass, valide le format `node/<id>` / `way/<id>`, empêche les doublons
+
+**BarGame domain** (`bargame/`):
+- `BarGame` entity — `bar_games` table; contrainte unique `(bar_id, game_type)` ; champs : gameType (enum), quantity (≥1), isFree, qualityRating (0–5)
+- `BarGameType` enum — 12 valeurs : BABYFOOT, DARTS_PLASTIC, DARTS_STEEL, BILLIARDS, PETANQUE, MOLKKY, PALET, ARCADE, BOARD_GAMES, PING_PONG, BEER_PONG, FLIPPER
+- Endpoints admin : `POST/PUT/DELETE/GET /admin/bars/{barId}/games[/{gameId}]`
 
 **Public endpoints:** `/auth/**`, `/public/**`, `/oauth2/**`, `/login/oauth2/**`, `/swagger-ui/**`, `/v3/api-docs/**`
 **Protected:** everything else; `/admin/**` requires ADMIN role
@@ -125,7 +172,9 @@ commun/
 ├── config/         OpenApiConfig.java
 ├── exception/
 │   ├── ExceptionMessages.java              # generic HTTP labels + message templates
-│   ├── ResourceNotFoundException.java
+│   ├── ResourceNotFoundException.java      # → 404
+│   ├── ResourceAlreadyExistsException.java # → 409
+│   ├── ExternalServiceException.java       # → 502 (Overpass rate-limit / unavailable)
 │   ├── dto/   ErrorResponse.java
 │   └── handler/ GlobalExceptionHandler.java
 └── service/
