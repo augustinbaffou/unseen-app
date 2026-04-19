@@ -128,14 +128,14 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
       <!-- ── Informations ────────────────────────────────────────────── -->
-      @if (addressFull(bar()!) || bar()!.outdoorSeating || bar()!.indoorSeating) {
+      @if (address() || bar()!.outdoorSeating || bar()!.indoorSeating) {
         <section class="bg-surface border border-beige rounded-card p-6">
           <h2 class="font-display text-lg font-semibold text-charcoal mb-4">Informations</h2>
           <dl class="space-y-3">
-            @if (addressFull(bar()!)) {
+            @if (address()) {
               <div class="flex items-start gap-4">
                 <dt class="font-accent text-xs text-muted uppercase tracking-wider w-20 shrink-0 pt-0.5">Adresse</dt>
-                <dd class="font-body text-sm text-charcoal">{{ addressFull(bar()!) }}</dd>
+                <dd class="font-body text-sm text-charcoal">{{ address() }}</dd>
               </div>
             }
             @if (bar()!.outdoorSeating) {
@@ -155,22 +155,22 @@
       }
 
       <!-- ── Horaires ───────────────────────────────────────────────── -->
-      <section class="bg-surface border border-beige rounded-card overflow-hidden" style="box-shadow: 0 2px 8px rgba(43,45,46,0.08)">
-        @let status = barStatus(bar()!);
-        @let hh = hhStatus(bar()!);
+      <section class="bg-surface border border-beige rounded-card overflow-hidden schedules-card">
+        @let st = status();
+        @let hh = hhStatus();
         <div class="px-5 py-2.5 flex items-center justify-between"
-             [style.background]="statusBg(status.type)"
-             [style.border-bottom]="'1px solid ' + statusBorderColor(status.type)">
+             [style.background]="statusBg(st.type)"
+             [style.border-bottom]="'1px solid ' + statusBorderColor(st.type)">
           <span class="font-accent text-xs font-semibold flex items-center gap-2"
-                [style.color]="statusColor(status.type)">
-            @if (status.type === 'OPEN') {
+                [style.color]="statusColor(st.type)">
+            @if (st.type === 'OPEN') {
               <span class="dot-open"></span>
-            } @else if (status.type === 'CLOSES_SOON' || status.type === 'OPENS_SOON') {
+            } @else if (st.type === 'CLOSES_SOON' || st.type === 'OPENS_SOON') {
               <span class="dot-soon"></span>
             } @else {
-              <span style="width:8px;height:8px;border-radius:50%;background:#9E9E9E;display:inline-block;flex-shrink:0"></span>
+              <span class="dot-closed"></span>
             }
-            {{ status.label }}
+            {{ st.label }}
           </span>
           @if (hh) {
             <span class="font-accent text-xs font-medium text-terracotta">{{ hh.label }}</span>
@@ -182,18 +182,18 @@
           <thead>
             <tr class="border-b border-beige">
               <th class="font-accent text-xs text-muted pb-2 text-left w-24"></th>
-              @if (happyHourSchedules(bar()!).length > 0) {
+              @if (happyHours().length > 0) {
                 <th class="font-accent text-xs text-terracotta pb-2 text-right pl-4">Happy Hour</th>
               }
               <th class="font-accent text-xs text-muted pb-2 text-right">Ouverture</th>
             </tr>
           </thead>
           <tbody>
-            @for (row of allDaySchedules(bar()!); track row.dayKey) {
+            @for (row of dayRows(); track row.dayKey) {
               <tr class="border-b border-beige last:border-0">
                 <td class="font-body text-sm py-2 text-charcoal"
-                    [class.font-semibold]="row.dayKey === todayKey">
-                  @if (row.dayKey === todayKey) {
+                    [class.font-semibold]="row.dayKey === todayKey()">
+                  @if (row.dayKey === todayKey()) {
                     <span class="inline-flex items-center gap-1.5">
                       <span class="text-terracotta" style="font-size:8px;line-height:1">●</span>
                       {{ row.label }}
@@ -202,25 +202,25 @@
                     {{ row.label }}
                   }
                 </td>
-                @if (happyHourSchedules(bar()!).length > 0) {
+                @if (happyHours().length > 0) {
                   <td class="font-body text-terracotta text-xs py-2 text-right pl-4">
                     {{ row.happyHour ? formatHours(row.happyHour) : '–' }}
                   </td>
                 }
                 <td class="font-body text-sm py-2 text-right"
-                    [class.text-smoke]="row.dayKey !== todayKey"
-                    [class.text-charcoal]="row.dayKey === todayKey"
-                    [class.font-semibold]="row.dayKey === todayKey">
+                    [class.text-smoke]="row.dayKey !== todayKey()"
+                    [class.text-charcoal]="row.dayKey === todayKey()"
+                    [class.font-semibold]="row.dayKey === todayKey()">
                   {{ row.schedule ? formatHours(row.schedule) : 'Fermé' }}
                 </td>
               </tr>
             }
           </tbody>
         </table>
-        @if (happyHourSchedules(bar()!).length > 0 && happyHourSchedules(bar()!)[0].happyHourDetails) {
+        @if (happyHours().length > 0 && happyHours()[0].happyHourDetails) {
           <div class="mt-3 pt-3 border-t border-beige">
             <p class="font-accent text-xs font-medium text-terracotta uppercase tracking-wider mb-1">Happy Hour</p>
-            <p class="font-body text-xs text-smoke italic">{{ happyHourSchedules(bar()!)[0].happyHourDetails }}</p>
+            <p class="font-body text-xs text-smoke italic">{{ happyHours()[0].happyHourDetails }}</p>
           </div>
         }
         </div>

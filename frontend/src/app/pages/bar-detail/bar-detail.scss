@@ -31,3 +31,15 @@ section {
   animation: pulse-soon 1s ease-in-out infinite;
   flex-shrink: 0;
 }
+
+.dot-closed {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #9E9E9E;
+  flex-shrink: 0;
+}
+
+.schedules-card {
+  box-shadow: 0 2px 8px rgba(43, 45, 46, 0.08);
+}
