@@ -1,0 +1,309 @@
+<div class="min-h-screen bg-cream">
+  <app-navbar></app-navbar>
+
+  <!-- ── Skeleton ───────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="bg-surface border-b border-beige">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 animate-pulse">
+        <div class="h-4 bg-beige rounded w-28 mb-6"></div>
+        <div class="h-8 bg-beige rounded w-1/2 mb-3"></div>
+        <div class="flex gap-2 mb-4">
+          <div class="h-6 w-24 bg-beige rounded-pill"></div>
+          <div class="h-6 w-16 bg-beige rounded-pill"></div>
+        </div>
+        <div class="space-y-2">
+          <div class="h-3 bg-beige rounded w-full"></div>
+          <div class="h-3 bg-beige rounded w-4/5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-4 animate-pulse">
+      <div class="bg-surface border border-beige rounded-card p-6 h-32"></div>
+      <div class="bg-surface border border-beige rounded-card p-6 h-40"></div>
+    </div>
+  }
+
+  <!-- ── 404 ────────────────────────────────────────────────────────────── -->
+  @if (notFound()) {
+    <div class="flex flex-col items-center justify-center py-24 text-center px-4">
+      <div class="w-14 h-14 rounded-full bg-overlay flex items-center justify-center mb-4">
+        <svg class="w-7 h-7 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+        </svg>
+      </div>
+      <p class="font-display text-2xl font-semibold text-charcoal mb-2">Bar introuvable</p>
+      <p class="font-body text-sm text-smoke mb-6">Ce bar n'existe pas ou a été supprimé.</p>
+      <a routerLink="/bars" class="font-accent text-sm font-medium text-terracotta hover:underline underline-offset-2">
+        ← Retour à la liste
+      </a>
+    </div>
+  }
+
+  <!-- ── Erreur ─────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="flex flex-col items-center justify-center py-24 text-center px-4">
+      <div class="w-14 h-14 rounded-full bg-overlay flex items-center justify-center mb-4">
+        <svg class="w-7 h-7 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+      </div>
+      <p class="font-display text-2xl font-semibold text-charcoal mb-2">Erreur de chargement</p>
+      <p class="font-body text-sm text-smoke mb-6">Vérifiez que le backend est démarré sur le port 8080.</p>
+      <a routerLink="/bars" class="font-accent text-sm font-medium text-terracotta hover:underline underline-offset-2">
+        ← Retour à la liste
+      </a>
+    </div>
+  }
+
+  <!-- ── Contenu ────────────────────────────────────────────────────────── -->
+  @if (!loading() && bar()) {
+
+    <!-- En-tête -->
+    <div class="bg-surface border-b border-beige">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        <a routerLink="/bars"
+           class="inline-flex items-center gap-1.5 font-accent text-xs text-muted hover:text-charcoal mb-6 transition-colors">
+          <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Retour aux bars
+        </a>
+
+        <div class="flex items-start justify-between gap-4 mb-3">
+          <div class="min-w-0">
+            <h1 class="font-display text-3xl font-bold text-charcoal leading-tight mb-1">
+              {{ bar()!.name }}
+            </h1>
+            @if (bar()!.altName) {
+              <p class="font-body text-sm text-smoke">Aussi connu sous : <span class="italic">{{ bar()!.altName }}</span></p>
+            }
+            @if (bar()!.wasName) {
+              <p class="font-body text-xs text-muted mt-0.5">Anciennement : {{ bar()!.wasName }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            <span class="font-accent text-xs font-medium px-2.5 py-1 rounded-pill border whitespace-nowrap"
+                  [style.color]="trustColor(bar()!.dataTrust)"
+                  [style.background-color]="trustBgColor(bar()!.dataTrust)"
+                  [style.border-color]="trustBorderColor(bar()!.dataTrust)"
+                  [attr.title]="trustLabel(bar()!.dataTrust)">
+              {{ trustLabel(bar()!.dataTrust) }}
+            </span>
+            @if (bar()!.priceRange) {
+              <span class="font-accent text-sm font-semibold text-terracotta">
+                {{ priceLabel(bar()!.priceRange) }}
+              </span>
+            }
+          </div>
+        </div>
+
+        @if (bar()!.types.length > 0) {
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            @for (type of bar()!.types; track type) {
+              <span class="font-accent text-xs px-2.5 py-1 rounded-pill bg-overlay text-smoke border border-beige">
+                {{ typeLabel(type) }}
+              </span>
+            }
+          </div>
+        }
+
+        @if (bar()!.description) {
+          <p class="font-body text-sm text-smoke leading-relaxed max-w-2xl">
+            {{ bar()!.description }}
+          </p>
+        } @else {
+          <p class="font-body text-sm text-muted italic">Aucune description disponible.</p>
+        }
+      </div>
+    </div>
+
+    <!-- Sections -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+      <!-- ── Informations ────────────────────────────────────────────── -->
+      @if (address() || bar()!.outdoorSeating || bar()!.indoorSeating) {
+        <section class="bg-surface border border-beige rounded-card p-6">
+          <h2 class="font-display text-lg font-semibold text-charcoal mb-4">Informations</h2>
+          <dl class="space-y-3">
+            @if (address()) {
+              <div class="flex items-start gap-4">
+                <dt class="font-accent text-xs text-muted uppercase tracking-wider w-20 shrink-0 pt-0.5">Adresse</dt>
+                <dd class="font-body text-sm text-charcoal">{{ address() }}</dd>
+              </div>
+            }
+            @if (bar()!.outdoorSeating) {
+              <div class="flex items-start gap-4">
+                <dt class="font-accent text-xs text-muted uppercase tracking-wider w-20 shrink-0 pt-0.5">Terrasse</dt>
+                <dd class="font-body text-sm text-charcoal">{{ bar()!.outdoorSeating }}</dd>
+              </div>
+            }
+            @if (bar()!.indoorSeating) {
+              <div class="flex items-start gap-4">
+                <dt class="font-accent text-xs text-muted uppercase tracking-wider w-20 shrink-0 pt-0.5">Intérieur</dt>
+                <dd class="font-body text-sm text-charcoal">{{ bar()!.indoorSeating }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      }
+
+      <!-- ── Horaires ───────────────────────────────────────────────── -->
+      <section class="bg-surface border border-beige rounded-card overflow-hidden schedules-card">
+        @let st = status();
+        @let hh = hhStatus();
+        <div class="px-5 py-2.5 flex items-center justify-between"
+             [style.background]="statusBg(st.type)"
+             [style.border-bottom]="'1px solid ' + statusBorderColor(st.type)">
+          <span class="font-accent text-xs font-semibold flex items-center gap-2"
+                [style.color]="statusColor(st.type)">
+            @if (st.type === 'OPEN') {
+              <span class="dot-open"></span>
+            } @else if (st.type === 'CLOSES_SOON' || st.type === 'OPENS_SOON') {
+              <span class="dot-soon"></span>
+            } @else {
+              <span class="dot-closed"></span>
+            }
+            {{ st.label }}
+          </span>
+          @if (hh) {
+            <span class="font-accent text-xs font-medium text-terracotta">{{ hh.label }}</span>
+          }
+        </div>
+        <div class="p-5">
+        <h3 class="font-accent text-xs font-medium text-muted uppercase tracking-wider mb-3">Horaires</h3>
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-beige">
+              <th class="font-accent text-xs text-muted pb-2 text-left w-24"></th>
+              @if (happyHours().length > 0) {
+                <th class="font-accent text-xs text-terracotta pb-2 text-right pl-4">Happy Hour</th>
+              }
+              <th class="font-accent text-xs text-muted pb-2 text-right">Ouverture</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of dayRows(); track row.dayKey) {
+              <tr class="border-b border-beige last:border-0">
+                <td class="font-body text-sm py-2 text-charcoal"
+                    [class.font-semibold]="row.dayKey === todayKey()">
+                  @if (row.dayKey === todayKey()) {
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="text-terracotta" style="font-size:8px;line-height:1">●</span>
+                      {{ row.label }}
+                    </span>
+                  } @else {
+                    {{ row.label }}
+                  }
+                </td>
+                @if (happyHours().length > 0) {
+                  <td class="font-body text-terracotta text-xs py-2 text-right pl-4">
+                    {{ row.happyHour ? formatHours(row.happyHour) : '–' }}
+                  </td>
+                }
+                <td class="font-body text-sm py-2 text-right"
+                    [class.text-smoke]="row.dayKey !== todayKey()"
+                    [class.text-charcoal]="row.dayKey === todayKey()"
+                    [class.font-semibold]="row.dayKey === todayKey()">
+                  {{ row.schedule ? formatHours(row.schedule) : 'Fermé' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (happyHours().length > 0 && happyHours()[0].happyHourDetails) {
+          <div class="mt-3 pt-3 border-t border-beige">
+            <p class="font-accent text-xs font-medium text-terracotta uppercase tracking-wider mb-1">Happy Hour</p>
+            <p class="font-body text-xs text-smoke italic">{{ happyHours()[0].happyHourDetails }}</p>
+          </div>
+        }
+        </div>
+      </section>
+
+      <!-- ── Jeux disponibles ───────────────────────────────────────── -->
+      @if (bar()!.games.length > 0) {
+        <section class="bg-surface border border-beige rounded-card p-6">
+          <h2 class="font-display text-lg font-semibold text-charcoal mb-4">Jeux disponibles</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            @for (game of bar()!.games; track game.id) {
+              <div class="flex flex-col gap-1.5 p-3 bg-overlay rounded-lg border border-beige">
+                <span class="font-accent text-xs font-semibold text-charcoal">{{ gameLabel(game) }}</span>
+                <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
+                  @if (game.quantity > 1) {
+                    <span class="font-body text-xs text-smoke">×{{ game.quantity }}</span>
+                  }
+                  @if (game.isFree) {
+                    <span class="font-accent text-xs text-sage font-medium">Gratuit</span>
+                  }
+                  @if (game.qualityRating != null) {
+                    <span class="font-body text-xs text-muted">★ {{ game.qualityRating }}/5</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Liens ──────────────────────────────────────────────────── -->
+      @if (bar()!.website || bar()!.instagram || bar()!.facebook) {
+        <section class="bg-surface border border-beige rounded-card p-6">
+          <h2 class="font-display text-lg font-semibold text-charcoal mb-4">Liens</h2>
+          <div class="flex flex-wrap gap-3">
+            @if (bar()!.website) {
+              <a [href]="bar()!.website" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 font-accent text-sm px-4 py-2 bg-overlay border border-beige rounded-btn text-charcoal hover:border-terracotta transition-colors">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253"/>
+                </svg>
+                Site web
+              </a>
+            }
+            @if (bar()!.instagram) {
+              <a [href]="instagramUrl(bar()!.instagram!)" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 font-accent text-sm px-4 py-2 bg-overlay border border-beige rounded-btn text-charcoal hover:border-terracotta transition-colors">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+                </svg>
+                Instagram
+              </a>
+            }
+            @if (bar()!.facebook) {
+              <a [href]="bar()!.facebook!" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 font-accent text-sm px-4 py-2 bg-overlay border border-beige rounded-btn text-charcoal hover:border-terracotta transition-colors">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                     aria-hidden="true">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Facebook
+              </a>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Actions ───────────────────────────────────────────────── -->
+      <div class="flex gap-3">
+        <button class="flex-1 bg-terracotta text-surface font-body font-semibold text-sm px-4 py-2.5 rounded-btn hover:opacity-90 transition-opacity border-0 cursor-pointer">
+          Soumettre un avis
+        </button>
+        <a [href]="mapsUrl(bar()!)" target="_blank" rel="noopener noreferrer"
+           class="flex-1 text-center bg-transparent border-2 border-terracotta text-charcoal font-body font-semibold text-sm px-4 py-2.5 rounded-btn hover:bg-terracotta/10 transition-colors cursor-pointer no-underline">
+          Itinéraire
+        </a>
+      </div>
+
+    </div>
+  }
+</div>

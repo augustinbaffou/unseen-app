@@ -1,10 +1,23 @@
 export type BarMarker = {
+  id?: number;
   name: string;
   lat: number;
   lng: number;
   rank: string;
   description?: string;
 };
+
+export type BarGameType =
+  | 'BABYFOOT' | 'DARTS_PLASTIC' | 'DARTS_STEEL' | 'BILLIARDS' | 'PETANQUE'
+  | 'MOLKKY' | 'PALET' | 'ARCADE' | 'BOARD_GAMES' | 'PING_PONG' | 'BEER_PONG' | 'FLIPPER';
+
+export interface BarGame {
+  id: number;
+  gameType: BarGameType;
+  quantity: number;
+  isFree: boolean;
+  qualityRating?: number;
+}
 
 // ── Backend Bar model ────────────────────────────────────────────────────────
 
@@ -39,7 +52,7 @@ export interface Bar {
   description?: string;
   priceRange?: number;
   schedules: BarSchedule[];
-  games: any[];
+  games: BarGame[];
   dataTrust: BarDataTrust;
   types: BarType[];
   outdoorSeating?: string;

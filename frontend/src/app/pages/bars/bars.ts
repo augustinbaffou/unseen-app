@@ -2,39 +2,12 @@ import {Component, computed, inject, signal} from '@angular/core';
 import {NavbarComponent} from '../../components/navbar/navbar';
 import {BarService} from '../../services/bar.service';
 import {Bar, BarDataTrust, BarType} from '../../commun/bar.model';
+import {BAR_TYPE_LABELS} from '../../commun/bar-labels';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {catchError, of, tap} from 'rxjs';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-
-export const BAR_TYPE_LABELS: Record<BarType, string> = {
-  COCKTAIL_BAR:    'Cocktails',
-  BEER_BAR:        'Bières',
-  CRAFT_BEER_BAR:  'Craft beer',
-  BREWPUB:         'Brewpub',
-  SPIRITS_BAR:     'Spiritueux',
-  WINE_BAR:        'Vins',
-  DANCING_BAR:     'Dansant',
-  LIVE_MUSIC_BAR:  'Musique live',
-  NIGHTCLUB:       'Boîte de nuit',
-  SPORTS_BAR:      'Sports',
-  ARCADE_BAR:      'Arcade',
-  BOARD_GAME_BAR:  'Jeux de société',
-  ESPORTS_BAR:     'E-sport',
-  PUB:             'Pub',
-  STUDENT_BAR:     'Bar étudiant',
-  LOUNGE_BAR:      'Lounge',
-  GUINGUETTE:      'Guinguette',
-  BRASSERIE:       'Brasserie',
-  TAPAS_BAR:       'Tapas',
-  COFFEE_SHOP_BAR: 'Café-bar',
-  CAFE_TABAC:      'Café-tabac',
-  PMU:             'PMU',
-  WATERFRONT_BAR:  'Bord de l\'eau',
-  TERRACE_BAR:     'Terrasse',
-  ROOFTOP:         'Rooftop',
-  PET_FRIENDLY:    'Bar à animaux',
-};
+import {RouterLink} from '@angular/router';
 
 const DATA_TRUST_CONFIG: Record<BarDataTrust, { label: string; color: string; bgColor: string; borderColor: string }> = {
   RAW_OSM:   { label: 'Données publiques',        color: '#8C8C8C', bgColor: '#8C8C8C20', borderColor: '#8C8C8C50' },
@@ -50,7 +23,7 @@ const ACTIVE_FILTER_STYLE = { color: '#5775e2', bgColor: '#5775e220', borderColo
   templateUrl: './bars.html',
   styleUrls: ['./bars.scss'],
   standalone: true,
-  imports: [NavbarComponent, CommonModule, FormsModule]
+  imports: [NavbarComponent, CommonModule, FormsModule, RouterLink]
 })
 export class BarsComponent {
   private readonly barService = inject(BarService);
